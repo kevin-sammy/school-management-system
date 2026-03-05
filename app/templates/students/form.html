@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Student{% endblock %}
+{% block page_title %}{{ action }} Student{% endblock %}
+{% block content %}
+<div class="card" style="max-width:680px;">
+  <div class="card-header py-3"><i class="bi bi-person-plus me-2"></i>{{ action }} Student</div>
+  <div class="card-body">
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Admission No *</label>
+          <input type="text" name="admission_no" class="form-control" value="{{ student.admission_no if student else '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Year Enrolled</label>
+          <input type="number" name="year_enrolled" class="form-control" value="{{ student.year_enrolled if student else 2026 }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">First Name *</label>
+          <input type="text" name="first_name" class="form-control" value="{{ student.first_name if student else '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Last Name *</label>
+          <input type="text" name="last_name" class="form-control" value="{{ student.last_name if student else '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Date of Birth</label>
+          <input type="date" name="date_of_birth" class="form-control" value="{{ student.date_of_birth if student else '' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Gender</label>
+          <select name="gender" class="form-select">
+            <option value="">Select</option>
+            <option value="Male" {% if student and student.gender == 'Male' %}selected{% endif %}>Male</option>
+            <option value="Female" {% if student and student.gender == 'Female' %}selected{% endif %}>Female</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Class *</label>
+          <input type="text" name="class_name" class="form-control" placeholder="e.g. Grade 5" value="{{ student.class_name if student else '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Stream</label>
+          <input type="text" name="stream" class="form-control" placeholder="e.g. East" value="{{ student.stream if student else '' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Parent/Guardian</label>
+          <select name="parent_id" class="form-select">
+            <option value="">None</option>
+            {% for p in parents %}
+            <option value="{{ p.id }}" {% if student and student.parent_id == p.id %}selected{% endif %}>{{ p.full_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% if student %}
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Status</label>
+          <select name="status" class="form-select">
+            <option value="active" {% if student.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if student.status == 'inactive' %}selected{% endif %}>Inactive</option>
+            <option value="graduated" {% if student.status == 'graduated' %}selected{% endif %}>Graduated</option>
+          </select>
+        </div>
+        {% endif %}
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary text-white">Save Student</button>
+        <a href="{{ url_for('students.index') }}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

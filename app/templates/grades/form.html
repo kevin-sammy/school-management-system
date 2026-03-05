@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Enter Grade{% endblock %}
+{% block page_title %}Enter Grade{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px;">
+  <div class="card-header py-3">Record Grade</div>
+  <div class="card-body">
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label small fw-semibold">Student *</label>
+          <select name="student_id" class="form-select" required>
+            <option value="">Select student</option>
+            {% for s in students %}
+            <option value="{{ s.id }}">{{ s.full_name }} ({{ s.class_name }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Subject *</label>
+          <select name="subject" class="form-select" required>
+            {% for s in subjects %}
+            <option value="{{ s }}">{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Exam Type</label>
+          <select name="exam_type" class="form-select">
+            <option value="end_of_term">End of Term</option>
+            <option value="mid_term">Mid Term</option>
+            <option value="cat">CAT</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Score *</label>
+          <input type="number" name="score" class="form-control" min="0" max="100" step="0.5" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Max Score</label>
+          <input type="number" name="max_score" class="form-control" value="100">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Year *</label>
+          <input type="number" name="year" class="form-control" value="2026" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Term *</label>
+          <select name="term" class="form-select" required>
+            <option>Term 1</option><option>Term 2</option><option>Term 3</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Remarks</label>
+          <input type="text" name="remarks" class="form-control" placeholder="Optional">
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary text-white">Save Grade</button>
+        <a href="{{ url_for('grades.index') }}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Send Notification{% endblock %}
+{% block page_title %}Send Notification{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px;">
+  <div class="card-header py-3"><i class="bi bi-megaphone me-2"></i>Send Notification</div>
+  <div class="card-body">
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label small fw-semibold">Title *</label>
+          <input type="text" name="title" class="form-control" placeholder="e.g. School Closing Early Today" required>
+        </div>
+        <div class="col-12">
+          <label class="form-label small fw-semibold">Message *</label>
+          <textarea name="message" class="form-control" rows="5" placeholder="Write your message here..." required></textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label small fw-semibold">Target Audience</label>
+          <select name="target" class="form-select">
+            <option value="all">All (Parents & Staff)</option>
+            <option value="parents">Parents Only</option>
+            <option value="staff">Staff Only</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-warning fw-semibold">
+          <i class="bi bi-send me-1"></i>Send Notification
+        </button>
+        <a href="{{ url_for('parents.index') }}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

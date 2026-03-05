@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Grades{% endblock %}
+{% block page_title %}Grades{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <span><i class="bi bi-bar-chart me-2 text-danger"></i>Grade Records</span>
+    <a href="{{ url_for('grades.add') }}" class="btn btn-primary btn-sm text-white"><i class="bi bi-plus"></i> Enter Grade</a>
+  </div>
+  <div class="card-body border-bottom">
+    <form class="row g-2" method="GET">
+      <div class="col-md-3">
+        <select name="class_name" class="form-select form-select-sm">
+          <option value="">All Classes</option>
+          {% for c in classes %}
+          <option value="{{ c[0] }}" {% if class_filter == c[0] %}selected{% endif %}>{{ c[0] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="term" class="form-select form-select-sm">
+          <option value="">All Terms</option>
+          {% for t in ['Term 1','Term 2','Term 3'] %}
+          <option value="{{ t }}" {% if term == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="number" name="year" class="form-control form-control-sm" value="{{ year }}" placeholder="Year">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-sm btn-outline-secondary w-100">Filter</button>
+      </div>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th class="px-4">Student</th><th>Class</th><th>Subject</th><th>Score</th><th>Grade</th><th>Term</th><th>Year</th><th></th></tr></thead>
+      <tbody>
+        {% for s in students %}
+          {% for g in s.grades %}
+          <tr>
+            <td class="px-4 fw-semibold">{{ s.full_name }}</td>
+            <td class="text-muted small">{{ s.class_name }}</td>
+            <td>{{ g.subject }}</td>
+            <td>{{ g.score }}/{{ g.max_score|int }}</td>
+            <td><span class="badge bg-{% if g.letter_grade == 'A' %}success{% elif g.letter_grade == 'B' %}primary{% elif g.letter_grade == 'C' %}warning{% else %}danger{% endif %}">{{ g.letter_grade }}</span></td>
+            <td>{{ g.term }}</td>
+            <td>{{ g.year }}</td>
+            <td>
+              <form method="POST" action="{{ url_for('grades.delete', grade_id=g.id) }}" class="d-inline" onsubmit="return confirm('Delete this grade?')">
+                <button class="btn btn-sm btn-outline-danger">Del</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No grades found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

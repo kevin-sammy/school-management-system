@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Attendance Report{% endblock %}
+{% block page_title %}Attendance Report{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header py-3"><i class="bi bi-graph-up me-2"></i>Attendance Summary</div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th class="px-4">Student</th><th>Class</th><th>Attendance Rate</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td class="px-4"><a href="{{ url_for('students.view', student_id=s.id) }}" class="text-decoration-none fw-semibold">{{ s.full_name }}</a></td>
+          <td>{{ s.class_name }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="progress flex-grow-1" style="height:8px; max-width:120px;">
+                <div class="progress-bar {% if s.attendance_rate >= 80 %}bg-success{% elif s.attendance_rate >= 60 %}bg-warning{% else %}bg-danger{% endif %}"
+                     style="width:{{ s.attendance_rate }}%"></div>
+              </div>
+              <span class="small fw-semibold">{{ s.attendance_rate }}%</span>
+            </div>
+          </td>
+          <td>
+            {% if s.attendance_rate >= 80 %}
+              <span class="badge bg-success">Good</span>
+            {% elif s.attendance_rate >= 60 %}
+              <span class="badge bg-warning text-dark">At Risk</span>
+            {% else %}
+              <span class="badge bg-danger">Poor</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

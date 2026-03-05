@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Fees{% endblock %}
+{% block page_title %}Fee Management{% endblock %}
+{% block content %}
+<div class="row g-3 mb-3">
+  <div class="col-md-4">
+    <div class="stat-card" style="background:linear-gradient(135deg,#2d6a4f,#52b788);">
+      <p class="mb-1 opacity-75 small">Total Collected</p>
+      <h4 class="mb-0 fw-bold">KES {{ "{:,.0f}".format(total_collected) }}</h4>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card" style="background:linear-gradient(135deg,#8B0000,#c0392b);">
+      <p class="mb-1 opacity-75 small">Outstanding Balance</p>
+      <h4 class="mb-0 fw-bold">KES {{ "{:,.0f}".format(total_outstanding) }}</h4>
+    </div>
+  </div>
+  <div class="col-md-4 d-flex align-items-center">
+    <a href="{{ url_for('fees.record') }}" class="btn btn-primary text-white w-100">
+      <i class="bi bi-plus me-1"></i>Record Payment / Invoice
+    </a>
+  </div>
+</div>
+<div class="card">
+  <div class="card-header py-3"><i class="bi bi-cash-coin me-2 text-danger"></i>Fee Summary by Student</div>
+  <div class="card-body border-bottom">
+    <form class="row g-2" method="GET">
+      <div class="col-md-8">
+        <input type="text" name="search" class="form-control form-control-sm" placeholder="Search student..." value="{{ search }}">
+      </div>
+      <div class="col-md-2"><button class="btn btn-sm btn-outline-secondary w-100">Search</button></div>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th class="px-4">Student</th><th>Class</th><th>Balance</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td class="px-4 fw-semibold">{{ s.full_name }}</td>
+          <td class="text-muted small">{{ s.class_name }}</td>
+          <td class="fw-semibold {% if s.fee_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+            KES {{ "{:,.0f}".format(s.fee_balance) }}
+          </td>
+          <td>
+            {% if s.fee_balance <= 0 %}
+              <span class="badge bg-success">Paid</span>
+            {% elif s.fee_balance < 5000 %}
+              <span class="badge bg-warning text-dark">Partial</span>
+            {% else %}
+              <span class="badge bg-danger">Owing</span>
+            {% endif %}
+          </td>
+          <td><a href="{{ url_for('fees.student_fees', student_id=s.id) }}" class="btn btn-sm btn-outline-secondary">Statement</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No students found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

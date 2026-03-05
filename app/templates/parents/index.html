@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Parents{% endblock %}
+{% block page_title %}Parent Portal{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <span><i class="bi bi-house-heart me-2 text-danger"></i>Parents & Guardians</span>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('parents.notify') }}" class="btn btn-outline-warning btn-sm">
+        <i class="bi bi-megaphone me-1"></i>Send Notification
+      </a>
+      <a href="{{ url_for('parents.add') }}" class="btn btn-primary btn-sm text-white">
+        <i class="bi bi-plus"></i> Add Parent
+      </a>
+    </div>
+  </div>
+  <div class="card-body border-bottom">
+    <form class="row g-2" method="GET">
+      <div class="col-md-8"><input type="text" name="search" class="form-control form-control-sm" placeholder="Search by name..." value="{{ search }}"></div>
+      <div class="col-md-2"><button class="btn btn-sm btn-outline-secondary w-100">Search</button></div>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th class="px-4">Name</th><th>Relationship</th><th>Phone</th><th>Email</th><th>Children</th></tr></thead>
+      <tbody>
+        {% for p in parents %}
+        <tr>
+          <td class="px-4 fw-semibold">{{ p.full_name }}</td>
+          <td><span class="badge bg-light text-dark border">{{ p.relationship }}</span></td>
+          <td class="text-muted small">{{ p.phone or '—' }}</td>
+          <td class="text-muted small">{{ p.email or '—' }}</td>
+          <td>
+            {% for c in p.children %}
+            <span class="badge bg-light text-dark border me-1">{{ c.full_name }}</span>
+            {% endfor %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No parents found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

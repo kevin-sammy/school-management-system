@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Fee Statement — {{ student.full_name }}{% endblock %}
+{% block page_title %}Fee Statement{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <span>Fee Statement — {{ student.full_name }}</span>
+    <span class="badge {% if student.fee_balance > 0 %}bg-danger{% else %}bg-success{% endif %} fs-6">
+      Balance: KES {{ "{:,.0f}".format(student.fee_balance) }}
+    </span>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th class="px-4">Date</th><th>Type</th><th>Description</th><th>Method</th><th>Ref</th><th>Amount</th></tr></thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td class="px-4 text-muted small">{{ r.date or r.created_at.strftime('%Y-%m-%d') }}</td>
+          <td><span class="badge {% if r.record_type == 'payment' %}bg-success{% else %}bg-warning text-dark{% endif %}">{{ r.record_type }}</span></td>
+          <td>{{ r.description or '—' }}</td>
+          <td class="text-muted small">{{ r.payment_method or '—' }}</td>
+          <td class="text-muted small">{{ r.reference_no or '—' }}</td>
+          <td class="fw-semibold {% if r.record_type == 'payment' %}text-success{% else %}text-danger{% endif %}">
+            {% if r.record_type == 'payment' %}+{% else %}-{% endif %}KES {{ "{:,.0f}".format(r.amount) }}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No transactions found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

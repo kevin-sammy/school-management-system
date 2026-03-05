@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ student.full_name }}{% endblock %}
+{% block page_title %}Student Profile{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card text-center p-4">
+      <div style="font-size:4rem;">👤</div>
+      <h5 class="fw-bold mt-2">{{ student.full_name }}</h5>
+      <p class="text-muted small mb-1">{{ student.admission_no }}</p>
+      <span class="badge bg-primary mb-3">{{ student.class_name }} {{ student.stream or '' }}</span>
+      <div class="d-grid gap-2">
+        <a href="{{ url_for('students.edit', student_id=student.id) }}" class="btn btn-outline-secondary btn-sm">Edit Profile</a>
+        <a href="{{ url_for('grades.report_card', student_id=student.id) }}" class="btn btn-outline-primary btn-sm">View Report Card</a>
+        <a href="{{ url_for('fees.student_fees', student_id=student.id) }}" class="btn btn-outline-danger btn-sm">Fee Statement</a>
+      </div>
+    </div>
+    <div class="card mt-3">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">Quick Stats</h6>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">Attendance Rate</span>
+          <span class="fw-semibold {% if student.attendance_rate >= 80 %}text-success{% else %}text-danger{% endif %}">
+            {{ student.attendance_rate }}%
+          </span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="text-muted small">Fee Balance</span>
+          <span class="fw-semibold {% if student.fee_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+            KES {{ "{:,.0f}".format(student.fee_balance) }}
+          </span>
+        </div>
+        <div class="d-flex justify-content-between">
+          <span class="text-muted small">Year Enrolled</span>
+          <span class="fw-semibold">{{ student.year_enrolled }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-header py-3"><i class="bi bi-bar-chart me-2"></i>Recent Grades</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th class="px-3">Subject</th><th>Score</th><th>Grade</th><th>Term</th><th>Year</th></tr></thead>
+          <tbody>
+            {% for g in grades[:8] %}
+            <tr>
+              <td class="px-3">{{ g.subject }}</td>
+              <td>{{ g.score }}/{{ g.max_score|int }}</td>
+              <td><span class="badge bg-{% if g.letter_grade == 'A' %}success{% elif g.letter_grade == 'B' %}primary{% elif g.letter_grade == 'C' %}warning{% else %}danger{% endif %}">{{ g.letter_grade }}</span></td>
+              <td>{{ g.term }}</td>
+              <td>{{ g.year }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-3">No grades recorded yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header py-3"><i class="bi bi-calendar-check me-2"></i>Recent Attendance (Last 30 days)</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead><tr><th class="px-3">Date</th><th>Status</th><th>Notes</th></tr></thead>
+          <tbody>
+            {% for a in attendance %}
+            <tr>
+              <td class="px-3">{{ a.date }}</td>
+              <td><span class="badge badge-{{ a.status }}">{{ a.status }}</span></td>
+              <td class="text-muted small">{{ a.notes or '—' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-3">No attendance records.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

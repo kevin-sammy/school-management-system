@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Staff{% endblock %}
+{% block page_title %}{{ action }} Staff Member{% endblock %}
+{% block content %}
+<div class="card" style="max-width:620px;">
+  <div class="card-header py-3">{{ action }} Staff Member</div>
+  <div class="card-body">
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Staff No *</label>
+          <input type="text" name="staff_no" class="form-control" value="{{ member.staff_no if member else '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Date Joined</label>
+          <input type="date" name="date_joined" class="form-control" value="{{ member.date_joined if member else '' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">First Name *</label>
+          <input type="text" name="first_name" class="form-control" value="{{ member.first_name if member else '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Last Name *</label>
+          <input type="text" name="last_name" class="form-control" value="{{ member.last_name if member else '' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Role *</label>
+          <select name="role" class="form-select" required>
+            <option value="">Select role</option>
+            {% for r in ['Teacher','Admin','Support','IT','Accounts','Nurse','Security'] %}
+            <option value="{{ r }}" {% if member and member.role == r %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Department</label>
+          <input type="text" name="department" class="form-control" value="{{ member.department if member else '' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Phone</label>
+          <input type="text" name="phone" class="form-control" value="{{ member.phone if member else '' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Email</label>
+          <input type="email" name="email" class="form-control" value="{{ member.email if member else '' }}">
+        </div>
+        {% if member %}
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Status</label>
+          <select name="status" class="form-select">
+            <option value="active" {% if member.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if member.status == 'inactive' %}selected{% endif %}>Inactive</option>
+          </select>
+        </div>
+        {% endif %}
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary text-white">Save</button>
+        <a href="{{ url_for('staff.index') }}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

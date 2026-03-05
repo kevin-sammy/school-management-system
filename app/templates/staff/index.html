@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Staff{% endblock %}
+{% block page_title %}Staff Management{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <span><i class="bi bi-person-badge me-2 text-danger"></i>Staff Directory</span>
+    <a href="{{ url_for('staff.add') }}" class="btn btn-primary btn-sm text-white"><i class="bi bi-plus"></i> Add Staff</a>
+  </div>
+  <div class="card-body border-bottom">
+    <form class="row g-2">
+      <div class="col-md-8">
+        <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by name or staff no..." value="{{ search }}">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-sm btn-outline-secondary w-100">Search</button>
+      </div>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th class="px-4">Staff No</th><th>Name</th><th>Role</th><th>Department</th><th>Contact</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for s in staff %}
+        <tr>
+          <td class="px-4 text-muted small">{{ s.staff_no }}</td>
+          <td class="fw-semibold">{{ s.full_name }}</td>
+          <td>{{ s.role }}</td>
+          <td class="text-muted small">{{ s.department or '—' }}</td>
+          <td class="text-muted small">{{ s.phone or s.email or '—' }}</td>
+          <td><span class="badge {% if s.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">{{ s.status }}</span></td>
+          <td>
+            <a href="{{ url_for('staff.edit', staff_id=s.id) }}" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+            <form method="POST" action="{{ url_for('staff.delete', staff_id=s.id) }}" class="d-inline" onsubmit="return confirm('Remove {{ s.full_name }}?')">
+              <button class="btn btn-sm btn-outline-danger">Del</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No staff found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

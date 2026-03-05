@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block page_title %}Students{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <span><i class="bi bi-people me-2 text-danger"></i>Student Registry</span>
+    <a href="{{ url_for('students.add') }}" class="btn btn-primary btn-sm text-white">
+      <i class="bi bi-plus"></i> Add Student
+    </a>
+  </div>
+  <div class="card-body border-bottom">
+    <form class="row g-2">
+      <div class="col-md-6">
+        <input type="text" name="search" class="form-control form-control-sm" placeholder="Search name or admission no..." value="{{ search }}">
+      </div>
+      <div class="col-md-4">
+        <select name="class_name" class="form-select form-select-sm">
+          <option value="">All Classes</option>
+          {% for c in classes %}
+          <option value="{{ c[0] }}" {% if class_filter == c[0] %}selected{% endif %}>{{ c[0] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-sm btn-outline-secondary w-100">Filter</button>
+      </div>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr>
+        <th class="px-4">Adm No</th><th>Name</th><th>Class</th>
+        <th>Attendance</th><th>Fee Balance</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td class="px-4 text-muted small">{{ s.admission_no }}</td>
+          <td><a href="{{ url_for('students.view', student_id=s.id) }}" class="text-decoration-none fw-semibold">{{ s.full_name }}</a></td>
+          <td><span class="badge bg-light text-dark border">{{ s.class_name }} {{ s.stream or '' }}</span></td>
+          <td>
+            <span class="{% if s.attendance_rate >= 80 %}text-success{% elif s.attendance_rate >= 60 %}text-warning{% else %}text-danger{% endif %} fw-semibold small">
+              {{ s.attendance_rate }}%
+            </span>
+          </td>
+          <td>
+            <span class="{% if s.fee_balance > 0 %}text-danger{% else %}text-success{% endif %} fw-semibold small">
+              KES {{ "{:,.0f}".format(s.fee_balance) }}
+            </span>
+          </td>
+          <td><span class="badge {% if s.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">{{ s.status }}</span></td>
+          <td>
+            <a href="{{ url_for('students.edit', student_id=s.id) }}" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+            <form method="POST" action="{{ url_for('students.delete', student_id=s.id) }}" class="d-inline"
+                  onsubmit="return confirm('Delete {{ s.full_name }}?')">
+              <button class="btn btn-sm btn-outline-danger">Del</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No students found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

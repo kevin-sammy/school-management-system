@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Report Card — {{ student.full_name }}{% endblock %}
+{% block page_title %}Report Card{% endblock %}
+{% block content %}
+<div class="card" style="max-width:700px;">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <span><i class="bi bi-file-text me-2"></i>Report Card</span>
+    <div class="d-flex gap-2">
+      <form class="d-flex gap-2" method="GET">
+        <select name="term" class="form-select form-select-sm" style="width:120px;">
+          {% for t in ['Term 1','Term 2','Term 3'] %}
+          <option value="{{ t }}" {% if term == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+        <input type="number" name="year" class="form-control form-control-sm" value="{{ year }}" style="width:80px;">
+        <button class="btn btn-sm btn-outline-secondary">View</button>
+      </form>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="text-center mb-4 pb-3 border-bottom">
+      <h5 class="fw-bold mb-1">Kitengela International Schools</h5>
+      <p class="text-muted mb-1">Student Report Card — {{ term }} {{ year }}</p>
+      <h6>{{ student.full_name }} &nbsp;|&nbsp; {{ student.class_name }} {{ student.stream or '' }} &nbsp;|&nbsp; Adm: {{ student.admission_no }}</h6>
+    </div>
+    <table class="table">
+      <thead><tr><th>Subject</th><th>Score</th><th>Max</th><th>%</th><th>Grade</th><th>Remarks</th></tr></thead>
+      <tbody>
+        {% for g in grades %}
+        <tr>
+          <td>{{ g.subject }}</td>
+          <td>{{ g.score }}</td>
+          <td>{{ g.max_score|int }}</td>
+          <td>{{ g.percentage }}%</td>
+          <td><span class="badge bg-{% if g.letter_grade == 'A' %}success{% elif g.letter_grade == 'B' %}primary{% elif g.letter_grade == 'C' %}warning{% else %}danger{% endif %}">{{ g.letter_grade }}</span></td>
+          <td class="text-muted small">{{ g.remarks or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted py-3">No grades for this term.</td></tr>
+        {% endfor %}
+      </tbody>
+      {% if grades %}
+      <tfoot>
+        <tr class="table-light fw-bold">
+          <td>Overall Average</td>
+          <td colspan="3">{{ average }}%</td>
+          <td><span class="badge bg-{% if average >= 80 %}success{% elif average >= 60 %}warning{% else %}danger{% endif %}">
+            {% if average >= 80 %}A{% elif average >= 70 %}B{% elif average >= 60 %}C{% elif average >= 50 %}D{% else %}E{% endif %}
+          </span></td>
+          <td></td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+{% endblock %}

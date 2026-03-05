@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}Attendance{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center py-3">
+    <span><i class="bi bi-calendar-check me-2 text-danger"></i>Daily Attendance</span>
+    <a href="{{ url_for('attendance.report') }}" class="btn btn-outline-secondary btn-sm">View Report</a>
+  </div>
+  <div class="card-body border-bottom">
+    <form class="row g-2" method="GET">
+      <div class="col-md-4">
+        <input type="date" name="date" class="form-control form-control-sm" value="{{ selected_date }}">
+      </div>
+      <div class="col-md-4">
+        <select name="class_name" class="form-select form-select-sm">
+          <option value="">All Classes</option>
+          {% for c in classes %}
+          <option value="{{ c[0] }}" {% if class_filter == c[0] %}selected{% endif %}>{{ c[0] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-sm btn-outline-secondary w-100">Filter</button>
+      </div>
+    </form>
+  </div>
+  <form method="POST" action="{{ url_for('attendance.save') }}">
+    <input type="hidden" name="date" value="{{ selected_date }}">
+    <div class="card-body p-0">
+      <table class="table table-hover mb-0">
+        <thead><tr>
+          <th class="px-4">Student</th><th>Class</th>
+          <th>Present</th><th>Absent</th><th>Late</th><th>Notes</th>
+        </tr></thead>
+        <tbody>
+          {% for s in students %}
+          <input type="hidden" name="student_ids" value="{{ s.id }}">
+          {% set current = existing.get(s.id) %}
+          <tr>
+            <td class="px-4 fw-semibold">{{ s.full_name }}</td>
+            <td class="text-muted small">{{ s.class_name }}</td>
+            <td><input type="radio" name="status_{{ s.id }}" value="present" {% if not current or current.status == 'present' %}checked{% endif %}></td>
+            <td><input type="radio" name="status_{{ s.id }}" value="absent" {% if current and current.status == 'absent' %}checked{% endif %}></td>
+            <td><input type="radio" name="status_{{ s.id }}" value="late" {% if current and current.status == 'late' %}checked{% endif %}></td>
+            <td><input type="text" name="notes_{{ s.id }}" class="form-control form-control-sm" style="width:160px;" value="{{ current.notes if current else '' }}" placeholder="Optional"></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="text-center text-muted py-4">No students found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if students %}
+    <div class="card-footer">
+      <button type="submit" class="btn btn-primary text-white">
+        <i class="bi bi-check-lg me-1"></i>Save Attendance for {{ selected_date }}
+      </button>
+    </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}
