@@ -1,0 +1,10 @@
+{% if not preview_mode and request.endpoint != 'hub.help_chat' and not (request.endpoint == 'exams.attempt' and attempt is defined and not attempt.submitted_at) %}
+<div class="assistant-widget no-print" data-assistant-widget data-visit-key="{{ assistant_visit_key }}">
+  <button type="button" class="assistant-launcher" aria-controls="assistant-popup" aria-expanded="false" data-chat-toggle><span aria-hidden="true">✦</span> How can we help?</button>
+  <aside id="assistant-popup" class="assistant-popup" role="dialog" aria-modal="false" aria-labelledby="assistant-popup-title" hidden>
+    <header class="assistant-header"><div><span class="assistant-eyebrow">{{ school_name }}</span><h2 id="assistant-popup-title">Portal assistant</h2></div><button type="button" class="assistant-close" aria-label="Close portal assistant" data-chat-close>×</button></header>
+    {% set chat_id = 'popup' %}{% include 'hub/_chat.html' %}
+  </aside>
+</div>
+<script src="{{ url_for('static', filename='js/help.js') }}" defer></script>
+{% endif %}

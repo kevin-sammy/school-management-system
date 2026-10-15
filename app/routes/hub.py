@@ -85,21 +85,46 @@ HELP_TOPICS = [
 ]
 
 
+PUBLIC_HELP_TOPICS = [
+    ('login', 'Sign in', ['login', 'log in', 'sign in', 'account', 'access'],
+     'Choose your role on the sign-in page and use the username and password issued by your school administrator.', 'auth.login', {'guest'}),
+    ('password', 'Forgotten password', ['password', 'reset', 'forgot', 'username'],
+     'Ask your school administrator to reset your credentials. Never share your password in this chat.', 'auth.login', {'guest'}),
+    ('parent', 'Parent portal', ['parent', 'child', 'fee', 'balance', 'attendance'],
+     'Parents sign in using a linked guardian account to view their children’s attendance and fee balances. Ask the school office to create or link your account.', 'auth.login', {'guest'}),
+    ('learning', 'Learning portal', ['learn', 'material', 'course', 'student', 'teacher', 'exam'],
+     'Sign in to access your own courses, learning materials, assignments and exams. Your school administrator can help if your account is missing a class.', 'auth.login', {'guest'}),
+]
+
+
+def assistant_topics():
+    if not current_user.is_authenticated:
+        return PUBLIC_HELP_TOPICS
+    return [t for t in HELP_TOPICS if current_user.role in t[5]]
+
+
+@hub_bp.app_context_processor
+def assistant_context():
+    from app.chatbot import enabled
+    return dict(assistant_topics=assistant_topics(),
+                assistant_ai_enabled=current_user.is_authenticated and enabled(),
+                assistant_visit_key=str(current_user.id) if current_user.is_authenticated else 'guest')
+
+
 @hub_bp.route('/help', methods=['GET', 'POST'])
-@roles('admin', 'teacher', 'student', 'parent')
 def help_chat():
-    topics = [t for t in HELP_TOPICS if current_user.role in t[5]]
+    topics = assistant_topics()
     if request.method == 'POST':
         message = text('message', 500)
         query = message.casefold()
         from app.chatbot import enabled, reserve_request, answer
         ai_answer = None
-        if enabled():
+        if current_user.is_authenticated and enabled():
             if not reserve_request(current_user.id):
                 return jsonify(error='Please wait a moment or use the topic links. The assistant allows 100 AI questions per day.'), 429
             ai_answer = answer(message, current_user.role, topics)
         matches = [t for t in topics if t[0] == query or any(word in query for word in t[2])][:3]
         return jsonify(answer=ai_answer, mode='ai' if ai_answer else 'guided', replies=[{'text': t[3], 'label': t[1], 'url': url_for(t[4])} for t in matches],
-                       fallback='I can help you find portal features. Choose a topic below, or try “materials”, “messages”, or “transport”.' if not matches and not ai_answer else '')
+                       fallback='I can help you find portal features. Choose a topic below, or ask how to sign in or use the school portal.' if not matches and not ai_answer else '')
     from app.chatbot import enabled
-    return render_template('hub/help.html', topics=topics, ai_enabled=enabled())
+    return render_template('hub/help.html', topics=topics, ai_enabled=current_user.is_authenticated and enabled())

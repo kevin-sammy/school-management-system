@@ -91,3 +91,12 @@ def test_exam_deadline_rejects_late_answers_and_preserves_saved_work(client,app)
         assert ExamAnswer.query.filter_by(question_id=questions[0]).one().answer=='3'
         assert sum(a.score for a in attempt.answers)==5
     assert client.get(path).status_code==200
+
+
+def test_active_exam_suppresses_chat_popup_but_closed_attempt_restores_it(client,app):
+    exam_id=make_exam(client,app)
+    attempt_id,questions=start_exam(client,app,exam_id)
+    path=f'/exams/attempts/{attempt_id}'
+    assert b'data-assistant-widget' not in client.get(path).data
+    assert post(client,path,{'action':'submit'}).status_code==302
+    assert b'data-assistant-widget' in client.get(path).data

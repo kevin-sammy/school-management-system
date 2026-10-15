@@ -1,0 +1,13 @@
+<div class="portal-chat" data-portal-chat>
+  <div class="portal-chat-log" role="log" aria-live="polite" aria-relevant="additions text" tabindex="0" aria-label="Assistant conversation" data-chat-log>
+    <p class="chat-line chat-assistant"><strong>Assistant</strong><span>Thank you for visiting {{ school_name }}. How may I help you?</span></p>
+  </div>
+  <p class="portal-chat-notice">Ask about using the portal. Please don’t enter passwords or private student details.{% if assistant_ai_enabled %} Questions are sent to our AI service.{% elif not current_user.is_authenticated %} Sign in for help with your school workspace.{% endif %}</p>
+  <form method="post" action="{{ url_for('hub.help_chat') }}" data-chat-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="{{ chat_id }}-message">Your question</label>
+    <div class="portal-chat-input"><input id="{{ chat_id }}-message" name="message" class="form-control" maxlength="500" required autocomplete="off" placeholder="Type your question…" data-chat-input><button class="btn btn-primary" type="submit" data-chat-send>Send</button></div>
+    <p class="portal-chat-status" role="status" data-chat-status>{{ 'AI answers available' if assistant_ai_enabled else 'Guided portal help' }}</p>
+  </form>
+  <div class="portal-chat-topics" aria-label="Suggested questions">{% for topic in assistant_topics %}<button type="button" class="btn btn-light btn-sm" data-topic="{{ topic[0] }}">{{ topic[1] }}</button>{% endfor %}</div>
+</div>

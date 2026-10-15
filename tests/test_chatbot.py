@@ -66,3 +66,53 @@ def test_ai_chat_auth_grounding_failure_and_quota(client,app,monkeypatch):
         allowance.day='2000-01-01'
         db.session.commit()
     assert post(client,'/hub/help',{'message':'help'}).status_code==200
+
+
+def test_public_welcome_help_never_calls_ai_or_exposes_workspace_links(client,app,monkeypatch):
+    monkeypatch.setenv('AI_GATEWAY_MODEL','configured/model')
+    monkeypatch.setenv('AI_GATEWAY_API_KEY','secret-for-test-only')
+    def forbidden(*args,**kwargs):
+        raise AssertionError('Visitor questions must not use the authenticated AI path')
+    monkeypatch.setattr('app.chatbot.answer',forbidden)
+    page=client.get('/login/student')
+    assert page.status_code==200
+    assert b'Thank you for visiting Kevin Brook International Schools. How may I help you?' in page.data
+    assert b'data-assistant-widget' in page.data
+    assert b'action="/hub/help"' in page.data
+    assert b'data-chat-input' in page.data
+    assert b'aria-expanded="false"' in page.data
+    assert client.get('/hub/help').status_code==200
+    result=post(client,'/hub/help',{'message':'I forgot my password'}).json
+    assert result['mode']=='guided' and not result['answer']
+    assert any('school administrator' in r['text'] for r in result['replies'])
+    assert all(r['url']=='/login' for r in result['replies'])
+    assert client.post('/hub/help',data={'message':'login'}).status_code==400
+    with app.app_context():
+        assert ChatAllowance.query.count()==0
+
+
+def test_transport_navigation_group_and_popup_role_boundaries(client,app):
+    for user,path in [('admin','/dashboard'),('teacher','/portal/'),('student','/portal/'),('parent','/family/')]:
+        login(client,user)
+        page=client.get(path)
+        assert page.status_code==200
+        sidebar=page.data.split(b'<nav class="sidebar"',1)[1].split(b'</nav>',1)[0]
+        section=sidebar.index(b'Student information')
+        transport=sidebar.index(b'href="/transport/"')
+        assert transport>section
+        assert sidebar.count(b'href="/transport/"')==1
+        assert b'data-assistant-widget' in page.data
+        assert page.data.count(b'id="popup-message"')==1
+        if user=='parent':
+            assert b'data-topic="materials"' not in page.data
+            assert b'data-topic="family"' in page.data
+        page=client.get('/hub/help')
+        assert b'data-assistant-widget' not in page.data
+        assert b'id="page-message"' in page.data
+        post(client,'/logout',{})
+    login(client,'admin')
+    from app.models import User
+    with app.app_context():
+        teacher_id=User.query.filter_by(username='teacher').one().id
+    page=client.get(f'/family/previews/{teacher_id}')
+    assert b'data-assistant-widget' not in page.data
