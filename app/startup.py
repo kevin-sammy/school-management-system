@@ -32,6 +32,7 @@ def install_startup(app):
                 if db.engine.dialect.name == 'postgresql':
                     db.session.execute(text('SELECT pg_advisory_xact_lock(73491026)'))
                 db.metadata.create_all(bind=db.session.connection())
+                recover_admin()
                 bootstrap_admin()
                 if os.environ.get('SEED_DEMO_DATA', '').lower() == 'true':
                     from app.demo import seed_demo_dataset
@@ -81,3 +82,47 @@ def bootstrap_admin():
     admin.set_password(password)
     db.session.add(admin)
     db.session.flush()
+
+
+
+def recover_admin():
+    """Apply an owner-configured recovery once, before ordinary bootstrap.
+
+    Only the hosting environment can request this operation. No public reset API
+    or default recovery password is introduced. PostgreSQL startup already holds
+    the transaction lock; the request primary key also rejects concurrent reuse.
+    """
+    from app.models import User, AdminRecovery
+    password = os.environ.get('ADMIN_RECOVERY_PASSWORD', '')
+    if not password:
+        return
+    request_id = os.environ.get('ADMIN_RECOVERY_ID', '').strip()
+    username = os.environ.get('ADMIN_RECOVERY_USERNAME', 'admin').strip()
+    if not 8 <= len(request_id) <= 80:
+        raise ValueError('Set ADMIN_RECOVERY_ID to a unique request name of 8 to 80 characters, for example restore-admin-20261015-1.')
+    # A previously consumed request must not overwrite a later password change.
+    if db.session.get(AdminRecovery, request_id):
+        return
+    if not 12 <= len(password) <= 128:
+        raise ValueError('ADMIN_RECOVERY_PASSWORD must contain 12 to 128 characters.')
+    if not username or len(username) > 80:
+        raise ValueError('ADMIN_RECOVERY_USERNAME must contain 1 to 80 characters.')
+    target = User.query.filter_by(username=username).first()
+    if target is not None and target.role != 'admin':
+        raise ValueError('The requested recovery username belongs to a non-administrator. Choose a different ADMIN_RECOVERY_USERNAME.')
+    if target is None:
+        admins = User.query.filter_by(role='admin').all()
+        if len(admins) > 1:
+            raise ValueError('Multiple administrators exist. Set ADMIN_RECOVERY_USERNAME to the exact username of the administrator to recover.')
+        if admins:
+            target = admins[0]
+            target.username = username
+        else:
+            email = f'recovery-{request_id}@schoolms.example.invalid'
+            if User.query.filter_by(email=email).first():
+                raise ValueError('The recovery account email already exists. Choose another ADMIN_RECOVERY_ID.')
+            target = User(username=username, email=email, role='admin')
+            db.session.add(target)
+    target.set_password(password)
+    db.session.flush()
+    db.session.add(AdminRecovery(request_id=request_id, user_id=target.id))
