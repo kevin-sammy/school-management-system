@@ -290,3 +290,10 @@ class AdminRecovery(db.Model):
     request_id = db.Column(db.String(80), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     completed_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
+class IdentifierCounter(db.Model):
+    """Transactional counters for student and staff public identifiers."""
+    __tablename__ = 'identifier_counters'
+    namespace = db.Column(db.String(40), primary_key=True)
+    last_value = db.Column(db.Integer, nullable=False)

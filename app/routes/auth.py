@@ -10,7 +10,7 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/login", methods=["GET", "POST"])
 @auth_bp.route("/login/<role>", methods=["GET", "POST"])
 def login(role=None):
-    if role not in {None, "admin", "teacher", "student"}:
+    if role not in {None, "admin", "teacher", "student", "parent"}:
         abort(404)
     if current_user.is_authenticated:
         return redirect(url_for("dashboard.index"))

@@ -7,7 +7,7 @@ from flask_login import current_user, login_required
 from sqlalchemy.exc import IntegrityError
 from app import db
 from app.models import (User, Student, Staff, StudentAccount, TeachingClass,
-                        Assignment, Submission, Lesson, Grade, Attendance, Notification, SubmissionAssessment)
+                        Assignment, Submission, Lesson, Grade, Attendance, Notification, SubmissionAssessment, Parent)
 
 portal_bp = Blueprint('portal', __name__)
 DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -48,8 +48,9 @@ def valid_date(name):
     return value
 
 
-def student_profile():
-    link = StudentAccount.query.filter_by(user_id=current_user.id).first()
+def student_profile(user=None):
+    user = user or current_user
+    link = StudentAccount.query.filter_by(user_id=user.id).first()
     if not link or link.student.status != 'active':
         abort(403, description='Ask your school administrator to link an active student profile.')
     return link.student
@@ -204,7 +205,7 @@ def accounts():
         kind = text('kind', 20)
         if kind == 'account':
             role = text('role', 20)
-            if role not in {'student', 'teacher'}:
+            if role not in {'student', 'teacher', 'parent'}:
                 abort(400)
             password = request.form.get('password', '')
             if not 12 <= len(password) <= 128:
@@ -219,6 +220,11 @@ def accounts():
                     if student.status != 'active':
                         abort(400)
                     db.session.add(StudentAccount(user_id=user.id, student_id=student.id))
+                elif role == 'parent':
+                    guardian = Parent.query.filter_by(id=integer('profile_id')).with_for_update().first_or_404()
+                    if guardian.user_id:
+                        abort(400, description='This parent or guardian already has a login.')
+                    guardian.user_id = user.id
                 else:
                     staff = Staff.query.get_or_404(integer('profile_id'))
                     if staff.user_id or staff.status != 'active' or staff.role.lower() != 'teacher':
@@ -265,6 +271,7 @@ def accounts():
         return redirect(url_for('portal.accounts'))
     return render_template('portal/accounts.html', students=Student.query.filter_by(status='active').all(),
                            staff=Staff.query.filter_by(status='active', user_id=None).all(),
+                           parents=Parent.query.filter_by(user_id=None).all(),
                            teachers=User.query.filter_by(role='teacher').all(), classes=TeachingClass.query.all(),
                            users=User.query.order_by(User.role, User.username).all(), days=DAYS)
 
@@ -290,7 +297,7 @@ def password():
 @roles('admin')
 def demo_data():
     from sqlalchemy import inspect
-    from app.demo import DATASET_KEY, seed_demo_dataset
+    from app.demo import DATASET_KEY, seed_demo_dataset, seed_demo_parent_accounts
     from app.models import DemoDataset
     if request.method == 'POST':
         password = request.form.get('password', '')
@@ -301,7 +308,10 @@ def demo_data():
         try:
             # Additive table creation also supports an existing deployment upgrade.
             db.create_all()
-            summary, created = seed_demo_dataset(password)
+            kind = request.form.get('kind', 'school')
+            if kind not in {'school','parents'}:
+                abort(400)
+            summary, created = seed_demo_parent_accounts(password) if kind == 'parents' else seed_demo_dataset(password)
         except ValueError as error:
             db.session.rollback()
             flash(str(error), 'danger')

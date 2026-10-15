@@ -10,17 +10,20 @@
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 {% if current_user.is_authenticated %}
-<nav class="sidebar" id="sidebar" aria-label="Main navigation">
+{% set nav_user = viewer if preview_mode else current_user %}
+<nav class="sidebar" id="sidebar" aria-label="Main navigation" {% if preview_mode %}inert{% endif %}>
   <a class="sidebar-brand" href="{{ url_for('dashboard.index') }}"><span class="brand-mark">s.</span> SchoolMS</a>
-  <div class="school-label">KITENGELA INTERNATIONAL SCHOOLS</div>
+  <div class="school-label">{{ school_name|upper }}</div>
   {% macro nav(endpoint, label, symbol) %}<a class="nav-link {% if request.endpoint == endpoint %}active{% endif %}" href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}><span class="nav-symbol" aria-hidden="true">{{ symbol }}</span>{{ label }}</a>{% endmacro %}
   <div class="nav-section">Workspace</div>
-  {{ nav('dashboard.index' if current_user.role == 'admin' else 'portal.home', 'Overview', '▦') }}
-  {{ nav('learning.courses', 'My courses' if current_user.role != 'admin' else 'All courses', '▤') }}
+  {{ nav('dashboard.index' if nav_user.role == 'admin' else 'family.home' if nav_user.role == 'parent' else 'portal.home', 'Overview', '▦') }}
+  {% if nav_user.role != 'parent' %}
+  {{ nav('learning.courses', 'My courses' if nav_user.role != 'admin' else 'All courses', '▤') }}
   {{ nav('learning.assignments', 'Assignments', '✓') }}
   {{ nav('learning.calendar', 'Calendar', '◷') }}
-  {% if current_user.role == 'student' %}{{ nav('learning.records', 'Grades & records', '▥') }}{% endif %}
-  {% if current_user.role == 'admin' %}
+  {% endif %}
+  {% if nav_user.role == 'student' %}{{ nav('learning.records', 'Grades & records', '▥') }}{% endif %}
+  {% if nav_user.role == 'admin' %}
   <div class="nav-section">Student information</div>
   {{ nav('students.index', 'Students', '◉') }}
   {{ nav('attendance.index', 'Attendance', '☑') }}
@@ -32,6 +35,7 @@
   {{ nav('parents.notifications', 'Noticeboard', '◌') }}
   {{ nav('portal.accounts', 'Accounts & scheduling', '⚙') }}
   {{ nav('portal.demo_data', 'Demo data', '▧') }}
+  {{ nav('family.previews', 'Dashboard previews', '◫') }}
   {% endif %}
   <div class="sidebar-foot">
     {{ nav('portal.password', 'Account settings', '⚙') }}
@@ -40,7 +44,7 @@
   </div>
 </nav>
 <div class="main-content">
-  <header class="topbar"><div class="d-flex align-items-center gap-3"><button class="mobile-toggle" id="nav-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">☰</button><div><div class="breadcrumb-text">School workspace / {{ current_user.role|title }}</div><div class="topbar-title">{% block page_title %}Overview{% endblock %}</div></div></div><div class="user-chip"><span class="avatar" aria-hidden="true">{{ current_user.username[:2]|upper }}</span><span class="username">{{ current_user.username }}<small>{{ current_user.role }}</small></span></div></header>
+  <header class="topbar"><div class="d-flex align-items-center gap-3"><button class="mobile-toggle" id="nav-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">☰</button><div><div class="breadcrumb-text">School workspace / {{ nav_user.role|title }}</div><div class="topbar-title">{% block page_title %}Overview{% endblock %}</div></div></div><div class="user-chip"><span class="avatar" aria-hidden="true">{{ nav_user.username[:2]|upper }}</span><span class="username">{{ nav_user.username }}<small>{{ nav_user.role }}</small></span></div></header>
   <main class="page-content" id="main">
     {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ category }}" role="status">{{ message }}</div>{% endfor %}{% endwith %}
     {% block content %}{% endblock %}

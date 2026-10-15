@@ -9,6 +9,8 @@ dashboard_bp = Blueprint("dashboard", __name__)
 @dashboard_bp.route("/dashboard")
 @login_required
 def index():
+    if current_user.role == "parent":
+        return redirect(url_for("family.home"))
     if current_user.role in {"teacher", "student"}:
         return redirect(url_for("portal.home"))
     if current_user.role != "admin":

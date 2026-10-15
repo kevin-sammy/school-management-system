@@ -14,6 +14,12 @@ login_manager = LoginManager()
 
 def create_app(test_config=None):
     app = Flask(__name__)
+    app.config["SCHOOL_NAME"] = "Kevin Brook International Schools"
+
+    @app.context_processor
+    def school_branding():
+        return {"school_name": app.config["SCHOOL_NAME"]}
+
     app.config["SECRET_KEY"] = os.environ.get(
         "SECRET_KEY", secrets.token_hex(32)
     )
@@ -64,6 +70,9 @@ def create_app(test_config=None):
     app.register_blueprint(portal_bp, url_prefix="/portal")
     from app.routes.learning import learning_bp
     app.register_blueprint(learning_bp)
+    from app.routes.family import family_bp
+    app.register_blueprint(family_bp)
+    from app import identifiers  # Register automatic IDs for all ORM inserts.
     from app.startup import install_startup
     install_startup(app)
     install_security(app)
@@ -90,7 +99,7 @@ def create_app(test_config=None):
         click.echo("Demo dataset created." if created else "Demo dataset already loaded; no duplicates added.")
         for table, count in summary.items():
             click.echo(f"{table}: {count}")
-        click.echo("Student login: demo.student001; teacher login: demo.teacher01.")
+        click.echo("Student login: demo.student001; teacher login: demo.teacher01; parent login: demo.parent01.")
         click.echo("An initial demo.admin account is created only when no administrator exists.")
         click.echo("New demo accounts use the password you supplied; existing passwords are unchanged.")
 
