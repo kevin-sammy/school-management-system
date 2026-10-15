@@ -1,10 +1,10 @@
 """
 app/__init__.py — Flask application factory
 """
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
 import os
+from flask import Flask
+from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -12,8 +12,16 @@ login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///school.db")
+    app.config["SECRET_KEY"] = os.environ.get(
+        "SECRET_KEY", "dev-secret-change-in-production"
+    )
+
+    # Get database URL from environment (Neon/Vercel) and handle prefix fix for SQLAlchemy
+    db_url = os.environ.get("DATABASE_URL")
+    if db_url and db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url or "sqlite:///school.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
@@ -32,10 +40,14 @@ def create_app():
 
     for bp in [auth_bp, dashboard_bp]:
         app.register_blueprint(bp)
+
     for bp, prefix in [
-        (students_bp, "/students"), (staff_bp, "/staff"),
-        (attendance_bp, "/attendance"), (grades_bp, "/grades"),
-        (fees_bp, "/fees"), (parents_bp, "/parents")
+        (students_bp, "/students"),
+        (staff_bp, "/staff"),
+        (attendance_bp, "/attendance"),
+        (grades_bp, "/grades"),
+        (fees_bp, "/fees"),
+        (parents_bp, "/parents"),
     ]:
         app.register_blueprint(bp, url_prefix=prefix)
 
