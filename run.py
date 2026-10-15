@@ -3,7 +3,7 @@ run.py — Start the SchoolMS application
 Usage: python run.py
 """
 from app import create_app, db
-from app.models import User, Student, Staff, Parent, Grade, Attendance, FeeRecord, Notification
+from app.models import User, Student, Staff, Parent, Grade, Attendance, FeeRecord, Notification, StudentAccount, TeachingClass, Assignment, Lesson, CourseMaterial, CoursePost
 
 
 def seed_demo_data(app):
@@ -64,6 +64,43 @@ def seed_demo_data(app):
         db.session.add_all(staff)
         db.session.flush()
 
+        # Linked demo portals (only created in an empty demo database).
+        learner = User(username="student", email="student@school.ke", role="student")
+        learner.set_password("student123")
+        db.session.add(learner)
+        db.session.flush()
+        db.session.add(StudentAccount(user_id=learner.id, student_id=students[0].id))
+        staff[0].user_id = teacher.id
+        classroom = TeachingClass(teacher_id=teacher.id, class_name="Grade 7", stream="East", subject="Mathematics")
+        db.session.add(classroom)
+        db.session.flush()
+        from datetime import date, timedelta
+        db.session.add(Assignment(teaching_class_id=classroom.id, title="Fractions practice",
+                                 instructions="Explain how to add 1/2 and 1/4. Show your working.",
+                                 due_date=(date.today() + timedelta(days=7)).isoformat()))
+        db.session.add(Lesson(teaching_class_id=classroom.id, day="Monday", start_time="09:00", end_time="09:40", room="Room 7E"))
+
+        # Demonstration course spaces and materials.
+        course_items = [classroom]
+        for subject in ['English', 'Science']:
+            course = TeachingClass(teacher_id=teacher.id, class_name="Grade 7", stream="East", subject=subject)
+            db.session.add(course)
+            course_items.append(course)
+        db.session.flush()
+        for i, course in enumerate(course_items):
+            db.session.add(CourseMaterial(teaching_class_id=course.id, module="Unit 1 · Getting started",
+                title=f"Welcome to {course.subject}", kind="page",
+                content="Welcome to your course. Review the lesson notes, explore the learning resources, and take part in our class discussion. Your weekly tasks and feedback are available in this space."))
+            db.session.add(CoursePost(teaching_class_id=course.id, author_id=teacher.id,
+                kind="discussion", title="What are you curious about this term?",
+                body="Share one topic you would like to explore and one question you have. Read your classmates’ ideas and build on them respectfully."))
+            if i:
+                db.session.add(Assignment(teaching_class_id=course.id, title="Reading reflection" if i == 1 else "Observe the world around you",
+                    instructions="Write a short reflection and explain what you learned. Use examples to support your answer.",
+                    due_date=(date.today() + timedelta(days=3+i)).isoformat()))
+                db.session.add(Lesson(teaching_class_id=course.id, day="Tuesday" if i == 1 else "Wednesday",
+                    start_time="10:00", end_time="10:40", room="Room 7E"))
+
         # Grades
         from datetime import date
         subjects = ["Mathematics", "English", "Science", "Kiswahili"]
@@ -114,4 +151,4 @@ if __name__ == "__main__":
     app = create_app()
     seed_demo_data(app)
     print("\n🚀 Starting SchoolMS on http://127.0.0.1:5000")
-    app.run(debug=True)
+    app.run(debug=False)

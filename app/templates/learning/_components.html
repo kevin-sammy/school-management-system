@@ -1,0 +1,12 @@
+{% macro course_card(c, assignments) %}
+<article class="card course-card">
+  <a class="course-cover" href="{{ url_for('learning.course', class_id=c.id) }}" aria-label="Open {{ c.subject }} {{ c.class_name }} {{ c.stream }}"><span class="course-monogram">{{ c.subject[:2]|upper }}</span><small>LEARNING SPACE</small></a>
+  <div class="course-info"><h5><a href="{{ url_for('learning.course', class_id=c.id) }}">{{ c.subject }}</a></h5><p>{{ c.class_name }} · {{ c.stream or 'Main class' }}</p><div class="course-footer"><span>{{ assignments|selectattr('teaching_class_id', 'equalto', c.id)|list|length }} assignments</span><a href="{{ url_for('learning.course', class_id=c.id) }}">Open course →</a></div></div>
+</article>
+{% endmacro %}
+{% macro assignment_status(a, submissions, today) %}
+{% if a.id in submissions %}<span class="pill green">Submitted</span>{% elif a.due_date < today %}<span class="pill red">{{ 'Missing' if current_user.role == 'student' else 'Past due' }}</span>{% else %}<span class="pill amber">{{ 'To do' if current_user.role == 'student' else 'Published' }}</span>{% endif %}
+{% endmacro %}
+{% macro course_tabs(item, active) %}
+<div class="tabs"><a class="{{ 'active' if active == 'materials' }}" href="{{ url_for('learning.course', class_id=item.id) }}">Materials</a><a class="{{ 'active' if active == 'updates' }}" href="{{ url_for('learning.course', class_id=item.id, tab='updates') }}">Updates & discussions</a><a class="{{ 'active' if active == 'assignments' }}" href="{{ url_for('learning.course', class_id=item.id, tab='assignments') }}">Assignments</a>{% if current_user.role in ['teacher','admin'] %}<a class="{{ 'active' if active == 'gradebook' }}" href="{{ url_for('learning.gradebook', class_id=item.id) }}">Gradebook</a>{% endif %}{% if current_user.role == 'teacher' %}<a href="{{ url_for('portal.classroom', class_id=item.id) }}">Roster & attendance</a>{% endif %}</div>
+{% endmacro %}

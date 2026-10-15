@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% from 'learning/_components.html' import course_card with context %}
+{% block title %}Courses{% endblock %}{% block page_title %}Courses{% endblock %}
+{% block content %}<div class="page-heading"><div><div class="eyebrow">LEARNING WORKSPACE</div><h2>{{ 'All courses' if current_user.role == 'admin' else 'My courses' }}</h2><p class="subtitle">Materials, conversations, and coursework. All in one place.</p></div><span class="pill">{{ classes|length }} courses</span></div>
+<form class="search-form mb-4" method="GET"><label class="visually-hidden" for="course-search">Search courses</label><input id="course-search" class="form-control" name="q" value="{{ search }}" placeholder="Search subject, class or stream…"><button class="btn btn-light">Search</button></form>
+<div class="courses-grid">{% for c in classes %}{{ course_card(c, assignments) }}{% else %}<div class="empty-state"><h5>No courses found</h5>Try another search or ask your administrator to set up your courses.</div>{% endfor %}</div>{% endblock %}

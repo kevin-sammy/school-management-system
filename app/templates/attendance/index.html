@@ -26,6 +26,7 @@
     </form>
   </div>
   <form method="POST" action="{{ url_for('attendance.save') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="date" value="{{ selected_date }}">
     <div class="card-body p-0">
       <table class="table table-hover mb-0">

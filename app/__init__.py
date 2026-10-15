@@ -2,7 +2,8 @@
 app/__init__.py — Flask application factory
 """
 import os
-from flask import Flask
+import secrets
+from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
@@ -10,10 +11,10 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.environ.get(
-        "SECRET_KEY", "dev-secret-change-in-production"
+        "SECRET_KEY", secrets.token_hex(32)
     )
 
     # Get database URL from environment (Neon/Vercel) and handle prefix fix for SQLAlchemy
@@ -23,6 +24,11 @@ def create_app():
 
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or "sqlite:///school.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    if test_config:
+        app.config.update(test_config)
+    app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
+    app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -50,5 +56,24 @@ def create_app():
         (parents_bp, "/parents"),
     ]:
         app.register_blueprint(bp, url_prefix=prefix)
+
+    from app.routes.portal import portal_bp
+    from app.security import install_security
+    app.register_blueprint(portal_bp, url_prefix="/portal")
+    from app.routes.learning import learning_bp
+    app.register_blueprint(learning_bp)
+    install_security(app)
+
+    @app.cli.command("init-db")
+    def init_db():
+        """Create missing tables without modifying existing records."""
+        db.create_all()
+        print("Database tables ready.")
+
+    for code, title in [(400, 'Check your request'), (403, 'This area is restricted'), (404, 'Page not found'), (409, 'This record is still linked')]:
+        def handle_error(error, title=title):
+            return render_template('error.html', code=error.code, title=title,
+                                   description=error.description), error.code
+        app.register_error_handler(code, handle_error)
 
     return app
