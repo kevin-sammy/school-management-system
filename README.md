@@ -351,3 +351,33 @@ help and the existing optional AI mode. The widget is hidden in administrator
 read-only previews, during active exam attempts, and when printing. It does not
 steal keyboard focus when it opens automatically. **School transport** is grouped
 under **Student information** in each signed-in role's sidebar.
+
+## School fee structures
+
+Open **Fee structures** in the sidebar, or **Finance → Manage fee structures**.
+Administrators create a draft for a class/grade, academic year and term; each
+class/year/term combination is unique and applies to all streams of that class.
+Add the school's approved charges under Tuition, Admission, Meals, Transport,
+Boarding, Examinations, Activities or Other, with a clear description. No actual
+school rates, bank accounts or payment references are assumed or pre-populated.
+
+Amounts are stored as integer cents, displayed in KES, and validated to at most two
+decimal places (0–10,000,000 per item). Mark conditional services as optional; the
+compulsory total excludes them. Add a payment due date, approved payment channels,
+reference instructions and notes/conditions, then **Publish fee structure**. A
+structure must contain at least one fee item before publication. Published rates
+are locked; return the structure to draft before removing/replacing an item or
+changing its details, then publish again. Drafts are visible to administrators only.
+
+Students see published structures for their current class. Parents see structures
+for their linked children's classes, and teachers those for their allocated classes.
+All roles can filter by year and print a structure. Parent dashboards and student
+records link to the fee structures, and the portal assistant can explain how to find
+them. Missing class/profile links produce an empty state or the existing profile
+linking guidance; other classes and draft details remain inaccessible.
+
+Fee structures are schedules, not ledger transactions. Creating, editing or publishing
+a structure does not issue invoices, record payments or change outstanding balances.
+Continue recording actual invoices/payments under Finance. Existing student fee
+statements and balances are preserved. The normal startup initializer creates the
+new tables on deployment without replacing the existing database.

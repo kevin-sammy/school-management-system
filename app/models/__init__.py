@@ -436,3 +436,36 @@ class ChatAllowance(db.Model):
     day = db.Column(db.String(10), nullable=False)
     count = db.Column(db.Integer, nullable=False)
     next_request_at = db.Column(db.DateTime, nullable=False)
+
+
+class FeeStructure(db.Model):
+    """A published class fee schedule, separate from actual student transactions."""
+    __tablename__ = 'fee_structures'
+    id = db.Column(db.Integer, primary_key=True)
+    class_name = db.Column(db.String(20), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    term = db.Column(db.String(20), nullable=False)
+    due_date = db.Column(db.String(10))
+    payment_instructions = db.Column(db.Text, nullable=False, default='')
+    notes = db.Column(db.Text, nullable=False, default='')
+    published = db.Column(db.Boolean, nullable=False, default=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    __table_args__ = (db.UniqueConstraint('class_name', 'year', 'term'),)
+
+    @property
+    def compulsory_total_cents(self):
+        return sum(line.amount_cents for line in self.lines if not line.optional)
+
+
+class FeeStructureLine(db.Model):
+    __tablename__ = 'fee_structure_lines'
+    id = db.Column(db.Integer, primary_key=True)
+    structure_id = db.Column(db.Integer, db.ForeignKey('fee_structures.id'), nullable=False)
+    category = db.Column(db.String(30), nullable=False)
+    label = db.Column(db.String(120), nullable=False)
+    amount_cents = db.Column(db.Integer, nullable=False)
+    optional = db.Column(db.Boolean, nullable=False, default=False)
+    structure = db.relationship('FeeStructure', backref=db.backref('lines', order_by='FeeStructureLine.id', cascade='all, delete-orphan'))
+    __table_args__ = (db.CheckConstraint('amount_cents >= 0 AND amount_cents <= 1000000000'),)

@@ -18,6 +18,7 @@
   <div class="nav-section">Workspace</div>
   {{ nav('mail.index', 'School inbox', '✉') }}
   {{ nav('hub.help_chat', 'Portal assistant', '?') }}
+  {{ nav('fee_structures.index', 'Fee structures', '▥') }}
   {{ nav('dashboard.index' if nav_user.role == 'admin' else 'family.home' if nav_user.role == 'parent' else 'portal.home', 'Overview', '▦') }}
   {% if nav_user.role != 'parent' %}
   {{ nav('hub.index', 'Digital learning hub', '▧') }}
