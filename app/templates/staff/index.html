@@ -32,6 +32,7 @@
           <td>
             <a href="{{ url_for('staff.edit', staff_id=s.id) }}" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
             <form method="POST" action="{{ url_for('staff.delete', staff_id=s.id) }}" class="d-inline" onsubmit="return confirm('Remove {{ s.full_name }}?')">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn btn-sm btn-outline-danger">Del</button>
             </form>
           </td>

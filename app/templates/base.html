@@ -1,145 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}SchoolMS{% endblock %} — Kitengela School Management</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.0/font/bootstrap-icons.min.css" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #8B0000;
-      --primary-light: #b30000;
-      --sidebar-width: 240px;
-    }
-    body { background: #f4f6fb; font-family: 'Segoe UI', sans-serif; }
-    .sidebar {
-      width: var(--sidebar-width); height: 100vh; position: fixed;
-      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-      color: white; overflow-y: auto; z-index: 100;
-    }
-    .sidebar-brand {
-      padding: 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
-      font-size: 1rem; font-weight: 700; color: white; text-decoration: none;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .sidebar-brand span { color: #e63946; font-size: 1.3rem; }
-    .sidebar .nav-link {
-      color: rgba(255,255,255,0.7); padding: 10px 20px;
-      border-radius: 6px; margin: 2px 8px; display: flex; align-items: center; gap: 10px;
-      transition: all 0.2s; font-size: 0.9rem;
-    }
-    .sidebar .nav-link:hover, .sidebar .nav-link.active {
-      background: rgba(139,0,0,0.5); color: white;
-    }
-    .sidebar .nav-section {
-      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;
-      color: rgba(255,255,255,0.3); padding: 12px 20px 4px;
-    }
-    .main-content { margin-left: var(--sidebar-width); padding: 0; min-height: 100vh; }
-    .topbar {
-      background: white; padding: 12px 24px; border-bottom: 1px solid #e5e7eb;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 99;
-    }
-    .page-content { padding: 24px; }
-    .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .card-header { background: white; border-bottom: 1px solid #f0f0f0; font-weight: 600; border-radius: 12px 12px 0 0 !important; }
-    .stat-card { border-radius: 12px; padding: 20px; color: white; }
-    .btn-primary { background: var(--primary); border-color: var(--primary); }
-    .btn-primary:hover { background: var(--primary-light); border-color: var(--primary-light); }
-    .badge-present { background: #dcfce7; color: #166534; }
-    .badge-absent { background: #fee2e2; color: #991b1b; }
-    .badge-late { background: #fef3c7; color: #92400e; }
-    table thead th { background: #f8f9fa; font-size: 0.85rem; font-weight: 600; color: #555; }
-    .alert { border-radius: 10px; border: none; }
-  </style>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Workspace{% endblock %} · SchoolMS</title>
+  <link href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/workspace.css') }}" rel="stylesheet">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
-
+<a class="skip-link" href="#main">Skip to content</a>
 {% if current_user.is_authenticated %}
-<!-- Sidebar -->
-<nav class="sidebar">
-  <a class="sidebar-brand" href="{{ url_for('dashboard.index') }}">
-    <span>🏫</span> SchoolMS
-  </a>
-  <div class="mt-3">
-    <div class="nav-section">Main</div>
-    <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}"
-       href="{{ url_for('dashboard.index') }}">
-      <i class="bi bi-speedometer2"></i> Dashboard
-    </a>
-
-    <div class="nav-section">Academic</div>
-    <a class="nav-link {% if 'students' in request.endpoint %}active{% endif %}"
-       href="{{ url_for('students.index') }}">
-      <i class="bi bi-people"></i> Students
-    </a>
-    <a class="nav-link {% if 'attendance' in request.endpoint %}active{% endif %}"
-       href="{{ url_for('attendance.index') }}">
-      <i class="bi bi-calendar-check"></i> Attendance
-    </a>
-    <a class="nav-link {% if 'grades' in request.endpoint %}active{% endif %}"
-       href="{{ url_for('grades.index') }}">
-      <i class="bi bi-bar-chart"></i> Grades
-    </a>
-
-    <div class="nav-section">Administration</div>
-    <a class="nav-link {% if 'staff' in request.endpoint %}active{% endif %}"
-       href="{{ url_for('staff.index') }}">
-      <i class="bi bi-person-badge"></i> Staff
-    </a>
-    <a class="nav-link {% if 'fees' in request.endpoint %}active{% endif %}"
-       href="{{ url_for('fees.index') }}">
-      <i class="bi bi-cash-coin"></i> Fees
-    </a>
-    <a class="nav-link {% if 'parents' in request.endpoint %}active{% endif %}"
-       href="{{ url_for('parents.index') }}">
-      <i class="bi bi-house-heart"></i> Parents
-    </a>
-    <a class="nav-link {% if 'notifications' in request.endpoint %}active{% endif %}"
-       href="{{ url_for('parents.notifications') }}">
-      <i class="bi bi-bell"></i> Notifications
-    </a>
-
-    <div class="nav-section">Account</div>
-    <a class="nav-link" href="{{ url_for('auth.logout') }}">
-      <i class="bi bi-box-arrow-left"></i> Logout
-    </a>
+<nav class="sidebar" id="sidebar" aria-label="Main navigation">
+  <a class="sidebar-brand" href="{{ url_for('dashboard.index') }}"><span class="brand-mark">s.</span> SchoolMS</a>
+  <div class="school-label">KITENGELA INTERNATIONAL SCHOOLS</div>
+  {% macro nav(endpoint, label, symbol) %}<a class="nav-link {% if request.endpoint == endpoint %}active{% endif %}" href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}><span class="nav-symbol" aria-hidden="true">{{ symbol }}</span>{{ label }}</a>{% endmacro %}
+  <div class="nav-section">Workspace</div>
+  {{ nav('dashboard.index' if current_user.role == 'admin' else 'portal.home', 'Overview', '▦') }}
+  {{ nav('learning.courses', 'My courses' if current_user.role != 'admin' else 'All courses', '▤') }}
+  {{ nav('learning.assignments', 'Assignments', '✓') }}
+  {{ nav('learning.calendar', 'Calendar', '◷') }}
+  {% if current_user.role == 'student' %}{{ nav('learning.records', 'Grades & records', '▥') }}{% endif %}
+  {% if current_user.role == 'admin' %}
+  <div class="nav-section">Student information</div>
+  {{ nav('students.index', 'Students', '◉') }}
+  {{ nav('attendance.index', 'Attendance', '☑') }}
+  {{ nav('grades.index', 'Grades & reports', '▥') }}
+  {{ nav('fees.index', 'Finance', '↗') }}
+  <div class="nav-section">School management</div>
+  {{ nav('staff.index', 'Staff', '♙') }}
+  {{ nav('parents.index', 'Parents & guardians', '♧') }}
+  {{ nav('parents.notifications', 'Noticeboard', '◌') }}
+  {{ nav('portal.accounts', 'Accounts & scheduling', '⚙') }}
+  {% endif %}
+  <div class="sidebar-foot">
+    {{ nav('portal.password', 'Account settings', '⚙') }}
+    <form method="POST" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="nav-link border-0 bg-transparent w-100" type="submit"><span class="nav-symbol" aria-hidden="true">↪</span> Sign out</button></form>
+    <div class="school-note">One school. One connected workspace.</div>
   </div>
 </nav>
-
-<!-- Main content -->
 <div class="main-content">
-  <div class="topbar">
-    <h6 class="mb-0 fw-semibold text-muted">{% block page_title %}{% endblock %}</h6>
-    <div class="d-flex align-items-center gap-3">
-      <span class="badge bg-light text-dark border">
-        <i class="bi bi-person-circle me-1"></i>{{ current_user.username }}
-        <span class="badge ms-1" style="background:#8B0000; font-size:0.65rem;">{{ current_user.role }}</span>
-      </span>
-    </div>
-  </div>
-
-  <div class="page-content">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% endfor %}
-    {% endwith %}
+  <header class="topbar"><div class="d-flex align-items-center gap-3"><button class="mobile-toggle" id="nav-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">☰</button><div><div class="breadcrumb-text">School workspace / {{ current_user.role|title }}</div><div class="topbar-title">{% block page_title %}Overview{% endblock %}</div></div></div><div class="user-chip"><span class="avatar" aria-hidden="true">{{ current_user.username[:2]|upper }}</span><span class="username">{{ current_user.username }}<small>{{ current_user.role }}</small></span></div></header>
+  <main class="page-content" id="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="alert alert-{{ category }}" role="status">{{ message }}</div>{% endfor %}{% endwith %}
     {% block content %}{% endblock %}
-  </div>
+  </main>
 </div>
-
-{% else %}
-{% block auth_content %}{% endblock %}
-{% endif %}
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+{% else %}{% block auth_content %}{% endblock %}{% endif %}
+<script>const toggle=document.getElementById('nav-toggle'),sidebar=document.getElementById('sidebar');if(toggle){toggle.addEventListener('click',()=>{const open=sidebar.classList.toggle('is-open');toggle.setAttribute('aria-expanded',String(open));});document.addEventListener('click',e=>{if(!sidebar.contains(e.target)&&!toggle.contains(e.target)){sidebar.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');}});document.addEventListener('keydown',e=>{if(e.key==='Escape'){sidebar.classList.remove('is-open');toggle.setAttribute('aria-expanded','false');toggle.focus();}});}document.querySelectorAll('[data-print]').forEach(b=>b.addEventListener('click',()=>window.print()));</script>
 {% block extra_js %}{% endblock %}
-</body>
-</html>
+</body></html>

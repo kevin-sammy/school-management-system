@@ -6,6 +6,7 @@
   <div class="card-header py-3"><i class="bi bi-megaphone me-2"></i>Send Notification</div>
   <div class="card-body">
     <form method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="row g-3">
         <div class="col-12">
           <label class="form-label small fw-semibold">Title *</label>
@@ -18,9 +19,11 @@
         <div class="col-12">
           <label class="form-label small fw-semibold">Target Audience</label>
           <select name="target" class="form-select">
-            <option value="all">All (Parents & Staff)</option>
+            <option value="all">Whole school</option>
             <option value="parents">Parents Only</option>
             <option value="staff">Staff Only</option>
+            <option value="students">Students Only</option>
+            <option value="teachers">Teachers Only</option>
           </select>
         </div>
       </div>

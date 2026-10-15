@@ -49,6 +49,7 @@
             <td>{{ g.year }}</td>
             <td>
               <form method="POST" action="{{ url_for('grades.delete', grade_id=g.id) }}" class="d-inline" onsubmit="return confirm('Delete this grade?')">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-sm btn-outline-danger">Del</button>
               </form>
             </td>

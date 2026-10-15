@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app import db
-from app.models import Student, Parent, Grade, Attendance, FeeRecord
+from app.models import Student, Parent, Grade, Attendance, FeeRecord, StudentAccount, Submission
 
 students_bp = Blueprint("students", __name__)
 
@@ -84,6 +84,8 @@ def edit(student_id):
 @login_required
 def delete(student_id):
     student = Student.query.get_or_404(student_id)
+    if StudentAccount.query.filter_by(student_id=student.id).first() or Submission.query.filter_by(student_id=student.id).first():
+        abort(409, description='This student has a portal account or submitted coursework. Set their status to inactive to preserve academic records.')
     db.session.delete(student)
     db.session.commit()
     flash("Student record deleted.", "info")
