@@ -60,6 +60,8 @@ def remove_room(room_id):
 
 
 HELP_TOPICS = [
+    ('fee_structure', 'Fee structures', ['fee structure', 'fees', 'charge', 'tuition', 'school fee'],
+     'Open Fee structures to see published charges for your class, term and year. Optional services are listed separately. Administrators create drafts, add approved charges and publish them. A schedule does not change your invoice balance.', 'fee_structures.index', {'admin','teacher','student','parent'}),
     ('materials', 'Learning materials', ['material', 'resource', 'library', 'hub', 'book', 'learn'],
      'Open the digital hub to search course materials. Teachers add pages and HTTPS resources from their course page.', 'hub.index', {'admin','teacher','student'}),
     ('courses', 'Courses and discussions', ['course', 'discussion', 'subject', 'class'],

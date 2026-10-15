@@ -1,0 +1,9 @@
+<div class="row g-3">
+  <div class="col-md-4"><label class="form-label d-block">Class / grade<input class="form-control" name="class_name" maxlength="20" value="{{ item.class_name if item else '' }}" list="class-options" placeholder="e.g. Grade 7" required></label><small class="text-muted">Applies to all streams in this class.</small></div>
+  <div class="col-md-4"><label class="form-label d-block">Academic year<input class="form-control" type="number" name="year" min="2000" max="2100" value="{{ item.year if item else year }}" required></label></div>
+  <div class="col-md-4"><label class="form-label d-block">Term<input class="form-control" name="term" maxlength="20" value="{{ item.term if item else '' }}" placeholder="e.g. Term 1" required></label></div>
+  <div class="col-md-4"><label class="form-label d-block">Payment due date (optional)<input class="form-control" type="date" name="due_date" value="{{ item.due_date or '' if item else '' }}"></label></div>
+  <div class="col-md-8"><label class="form-label d-block">Payment instructions<textarea class="form-control" name="payment_instructions" maxlength="3000" rows="3" placeholder="Enter the school’s approved payment channels and reference instructions.">{{ item.payment_instructions if item else '' }}</textarea></label></div>
+  <div class="col-12"><label class="form-label d-block">Notes and conditions<textarea class="form-control" name="notes" maxlength="3000" rows="3" placeholder="Explain optional services, discounts, one-time charges or payment arrangements.">{{ item.notes if item else '' }}</textarea></label></div>
+</div>
+<datalist id="class-options">{% for name in classes|default([]) %}<option value="{{ name }}">{% endfor %}</datalist>

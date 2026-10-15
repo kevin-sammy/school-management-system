@@ -80,6 +80,8 @@ def create_app(test_config=None):
     from app.routes.exams import exams_bp
     app.register_blueprint(hub_bp)
     app.register_blueprint(exams_bp)
+    from app.routes.fee_structures import fee_structures_bp
+    app.register_blueprint(fee_structures_bp)
     from app import identifiers  # Register automatic IDs for all ORM inserts.
     from app.startup import install_startup
     install_startup(app)
