@@ -284,3 +284,34 @@ def password():
             flash('Password updated.', 'success')
             return redirect(url_for('dashboard.index'))
     return render_template('portal/password.html')
+
+
+@portal_bp.route('/demo-data', methods=['GET', 'POST'])
+@roles('admin')
+def demo_data():
+    from sqlalchemy import inspect
+    from app.demo import DATASET_KEY, seed_demo_dataset
+    from app.models import DemoDataset
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirmation = request.form.get('confirm_password', '')
+        if password != confirmation:
+            flash('The demo password and confirmation must match.', 'danger')
+            return redirect(url_for('portal.demo_data'))
+        try:
+            # Additive table creation also supports an existing deployment upgrade.
+            db.create_all()
+            summary, created = seed_demo_dataset(password)
+        except ValueError as error:
+            db.session.rollback()
+            flash(str(error), 'danger')
+            return redirect(url_for('portal.demo_data'))
+        except IntegrityError:
+            db.session.rollback()
+            flash('The import conflicted with another request. Refresh to check whether the dataset was loaded.', 'warning')
+            return redirect(url_for('portal.demo_data'))
+        flash('Expanded demo data is ready.' if created else 'Demo data is already loaded. No duplicates were added.', 'success')
+        return redirect(url_for('portal.demo_data'))
+    ready = inspect(db.engine).has_table('demo_datasets')
+    marker = db.session.get(DemoDataset, DATASET_KEY) if ready else None
+    return render_template('portal/demo_data.html', summary=marker.summary if marker else None)

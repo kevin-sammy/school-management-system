@@ -274,3 +274,11 @@ class SubmissionAssessment(db.Model):
     grade_id = db.Column(db.Integer, db.ForeignKey('grades.id'), unique=True)
     submission = db.relationship('Submission')
     grade = db.relationship('Grade')
+
+
+class DemoDataset(db.Model):
+    """Transaction marker and summary for a repeatable demo-data import."""
+    __tablename__ = 'demo_datasets'
+    key = db.Column(db.String(80), primary_key=True)
+    summary = db.Column(db.JSON, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
