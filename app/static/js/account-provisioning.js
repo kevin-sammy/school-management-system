@@ -41,11 +41,13 @@
     const status = form.querySelector('[data-profile-status]');
     const password = form.querySelector('[data-profile-password]');
     const email = form.querySelector('[name=email]');
+    const confirmation = form.querySelector('[data-password-confirm]');
     function update() {
       const teacher = form.dataset.accountKind === 'parent' || role.value.toLowerCase() === 'teacher';
       const active = !state || state.value === 'active';
       panel.hidden = !teacher;
-      if (password) { password.required = teacher && active; password.disabled = !teacher || !active; }
+      if (password) { password.required = teacher && active && !form.dataset.linkedUsername; password.disabled = !teacher || !active; }
+      if (confirmation && password) { confirmation.disabled = !teacher || !active; confirmation.required = teacher && active && password.value.length > 0; }
       email.required = teacher && active && !form.dataset.linkedUsername;
       if (!teacher) { ++sequence; window.clearTimeout(timer); if (controller) controller.abort(); return; }
       if (form.dataset.linkedUsername) { output.value = form.dataset.linkedUsername; return; }
@@ -53,6 +55,9 @@
     }
     first.addEventListener('input', update);
     last.addEventListener('input', update);
+    if (confirmation && password) {
+      password.addEventListener('input', () => { confirmation.required = password.value.length > 0; });
+    }
     if (role) role.addEventListener('change', update);
     if (state) state.addEventListener('change', update);
     update();

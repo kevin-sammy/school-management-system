@@ -415,3 +415,33 @@ teacher profiles cannot be deleted or switched to another staff job title withou
 preserving their account/class records. Username previews and account creation are
 administrator-only. PostgreSQL serializes allocations with a transaction advisory
 lock; uniqueness constraints and rollback protect against conflicting writes.
+
+## Password setting and forgotten-password assistance
+
+For a teacher who already has a portal account, open **Staff → Edit → Teacher portal
+login → Set / reset password**. Enter and confirm the new password, then click Save.
+Both fields are optional when editing an existing account: leave them blank to keep
+the current password. New/unlinked active teachers still require an initial password.
+
+Administrators can also open **Accounts & scheduling → Portal accounts → Set / reset
+password** for a teacher, parent/guardian or student. The replacement must have 12–128
+characters and matching confirmation. The username, role and school records stay
+unchanged; share the new password privately. Administrator passwords are changed
+through the administrator's own Account settings or the documented hosting recovery.
+
+All signed-in users can change their own password under **Account settings** using
+their current password. Password changes invalidate other sessions using an HMAC
+credential stamp; the changing user's own session is refreshed. Legacy sessions from
+before this feature remain usable until that account's password changes, after which
+a database marker also forces those older sessions to sign in again. Passwords and
+password hashes are not put into session cookies or messages.
+
+For someone who cannot remember their password, the login page's **Forgot password?**
+link accepts a school username or account email. It creates an administrator-visible
+request for an existing teacher/student/parent account, with a generic response for
+unknown details. Pending requests are deduplicated per account, with a session
+cooldown and a renewal cooldown. No email is sent and no password is changed by
+submitting the request. The person contacts the school office; the administrator
+verifies identity against existing school records, opens **Password requests**, and
+sets a new password to share privately. Resetting the password resolves the request.
+The additive initializer creates the new password-change/request tables on deployment.

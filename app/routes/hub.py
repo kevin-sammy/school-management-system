@@ -83,7 +83,7 @@ HELP_TOPICS = [
     ('accounts', 'Accounts and dashboard previews', ['account', 'preview', 'login', 'password', 'user'],
      'Open Accounts & scheduling to provision accounts. Dashboard previews show the teacher, student and parent experience without changing your administrator session.', 'portal.accounts', {'admin'}),
     ('settings', 'Change password', ['password', 'setting', 'login'],
-     'Open Account settings to change your password. If you cannot sign in, ask your school administrator to reset your account password.', 'portal.password', {'admin','teacher','student','parent'}),
+     'Open Account settings to change your password. If you cannot sign in, use Forgot password on the login page to request administrator assistance.', 'portal.password', {'admin','teacher','student','parent'}),
 ]
 
 
@@ -91,7 +91,7 @@ PUBLIC_HELP_TOPICS = [
     ('login', 'Sign in', ['login', 'log in', 'sign in', 'account', 'access'],
      'Choose your role on the sign-in page and use the username and password issued by your school administrator.', 'auth.login', {'guest'}),
     ('password', 'Forgotten password', ['password', 'reset', 'forgot', 'username'],
-     'Ask your school administrator to reset your credentials. Never share your password in this chat.', 'auth.login', {'guest'}),
+     'Open Forgot password to request help from the school administrator. Contact the school office to verify your identity. Never share your password in this chat.', 'auth.forgot_password', {'guest'}),
     ('parent', 'Parent portal', ['parent', 'child', 'fee', 'balance', 'attendance'],
      'Parents sign in using a linked guardian account to view their children’s attendance and fee balances. Ask the school office to create or link your account.', 'auth.login', {'guest'}),
     ('learning', 'Learning portal', ['learn', 'material', 'course', 'student', 'teacher', 'exam'],
