@@ -39,6 +39,8 @@ def install_startup(app):
                     password = os.environ.get('DEMO_PASSWORD', '')
                     # An already imported dataset is a no-op and never resets passwords.
                     seed_demo_dataset(password)
+                from app.sample_names import normalize_sample_accounts
+                normalize_sample_accounts()
                 db.session.commit()
                 ready = True
             except ValueError as error:

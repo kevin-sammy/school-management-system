@@ -82,7 +82,10 @@ def test_demo_admin_form_and_new_role_logins(client, app):
     assert b'Your demo dataset is loaded' in client.get('/portal/demo-data').data
     assert post(client, '/portal/demo-data', data).status_code == 302
     post(client, '/logout', {})
-    for name in ['demo.teacher01', 'demo.student001', 'demo.student060']:
+    from app.models import SampleAccount
+    with app.app_context():
+        names = [db.session.get(SampleAccount, key).user.username for key in ['teacher01', 'student001', 'student060']]
+    for name in names:
         assert post(client, '/login', {'username': name, 'password': 'demo-password-123'}).status_code == 302
         for path in ['/portal/', '/learning/courses', '/learning/assignments', '/learning/calendar']:
             assert client.get(path).status_code == 200, (name, path)

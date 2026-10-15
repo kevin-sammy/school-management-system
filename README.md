@@ -28,14 +28,14 @@ python run.py
 Open `http://127.0.0.1:5000`. On an empty local database, `run.py` generates the
 expanded demo and prints a randomly generated demo password in your terminal.
 Set `DEMO_PASSWORD` beforehand if you prefer your own 12–128 character password.
-Existing populated databases are not automatically changed by `run.py`.
+Existing populated databases are preserved; the first request upgrades recognized sample account labels as described below.
 
-| Login area | Demo username | Password |
+| Login area | Sample username | Password |
 |---|---|---|
 | `/login/admin` | `demo.admin` on an empty demo database | Password printed locally or supplied through `DEMO_PASSWORD` |
-| `/login/teacher` | `demo.teacher01` through `demo.teacher06` | Password supplied when the dataset was first loaded |
-| `/login/student` | `demo.student001` through `demo.student060` | Password supplied when the dataset was first loaded |
-| `/login/parent` | `demo.parent01` through `demo.parent30` | Demo password, or the password chosen when upgrading parent logins |
+| `/login/teacher` | See Accounts & scheduling (for example, `grace.kamau`) | Password supplied when the dataset was first loaded |
+| `/login/student` | See Accounts & scheduling (for example, `amina.kamau`) | Password supplied when the dataset was first loaded |
+| `/login/parent` | See Accounts & scheduling (for example, `joseph.kamau`) | Demo password, or the password chosen when upgrading parent logins |
 
 The old `admin/admin123` demo credentials are not created by the new local runner.
 Existing accounts and passwords remain unchanged.
@@ -166,7 +166,7 @@ GitHub Actions runs the integration suite. Tests cover role/record boundaries,
 login, CSRF, provisioning, scores, submissions, grade publishing, discussions,
 calendar filters, repeatable demo generation and fresh/failed database startup.
 
-Not included: quizzes, file uploads, direct messaging, email-based password recovery, mobile apps or external PowerSchool synchronization. This is not a
+Not included: binary file uploads, external email delivery, email-based password recovery, mobile apps or external PowerSchool synchronization. This is not a
 PowerSchool product and does not claim commercial feature parity.
 
 ## Recover a forgotten administrator username or password
@@ -235,9 +235,102 @@ snapshots with the selected role's navigation. Preview links/actions are disable
 and the real administrator session is unchanged. For interactive testing, open a
 private/incognito window and use the respective role's issued credentials.
 
-Fresh demo datasets now include 30 linked parent accounts, `demo.parent01` through
-`demo.parent30`, using the supplied demo password. For demos loaded before this
+Fresh sample datasets include 30 linked parent accounts with natural usernames,
+using the supplied sample password. For demos loaded before this
 feature, select **Demo data → Add parent demo logins**, choose a password, and click
 **Add parent logins**. This adds missing demo guardian accounts once without resetting
 existing accounts. Parents are linked to their two existing demo children. The
 regular demo import retains its no-duplicates behavior.
+
+## School inbox and transport
+
+All four roles have a **School inbox**. Messages are stored in the school database,
+with unread indicators and private replies. Teachers can contact their class/route
+families; parents and students can contact their linked teachers and administrators.
+Administrators can broadcast to a role, creating a private conversation per recipient.
+Only participants can read a conversation, including when logged in as administrator.
+This is in-app messaging: SMTP, external email, SMS and push delivery are not connected.
+
+Under **School transport**, administrators create routes with vehicle, driver,
+phone, assigned teacher, active status and notes. Assign each student a home area,
+pickup/drop-off location and times (Africa/Nairobi). Each student has at most one
+route; saving an existing passenger on another route moves the assignment. Route
+teachers see their rosters; parents/students see only their own children's/own
+assignment. Home locations are private school data; no maps or live vehicle tracking
+are enabled. Reassign routes before deleting a route teacher.
+
+## Named sample accounts
+
+On the next application start, recognized sample teacher/student/parent usernames
+change from `demo.*` to names such as `grace.kamau`, `amina.kamau` and `joseph.kamau`.
+Collisions receive numeric suffixes. Guardian profiles receive natural first names.
+Find the actual **Name / Username / Role** directory in **Accounts & scheduling**;
+use dashboard previews or a private browser window to try each role. Existing account
+IDs, profile links, passwords, school records and admission/staff numbers stay intact.
+The operation is repeatable and only targets the recognized imported sample dataset;
+it does not rename unrelated accounts. Reserved `.invalid` addresses remain fictional.
+
+## Digital hub and collaboration
+
+**Digital learning hub** searches titles, subjects, modules and content of course
+materials. Administrators see all resources, teachers their allocated courses and
+students their current class/stream. Teachers add pages or HTTPS resource links from
+the course page. This is a resource library, not binary file upload storage.
+
+**Collaboration** lists course discussions plus teacher-shared Google Meet, Microsoft
+Teams and Google Classroom HTTPS links. The school creates meetings/classrooms in
+those services and pastes their links here, with a schedule/time zone. Links are
+course-scoped and validated against the selected provider's hosts. This does not
+provision third-party accounts, sync rosters, or provide video hosting or OAuth.
+
+## Online exams
+
+Teachers create a draft exam for an allocated course, set a duration of 1–240 minutes,
+and add four-option multiple-choice or written questions (1–100 points each). Publish
+the exam when ready: the question set is then immutable. Each student may start one
+attempt, after acknowledging the monitoring notice. Reopening resumes that attempt.
+
+The server records the deadline; leaving the page does not stop time. The browser
+saves every 15 seconds and when a response changes, shows remaining time and submits
+at expiry. Late requests finalize only previously saved answers; late answers are
+not accepted. Expired attempts also finalize when a teacher opens management/review.
+Students should submit early: the server deadline is authoritative and client clock,
+network or device failures can affect the displayed timer or unsaved work.
+
+Multiple choice is auto-marked. Teachers review written answers and release results;
+students see scores only after both review and release. Online-exam scores live in
+the exam area and are not automatically added to the term gradebook.
+
+Browser tab hiding, window focus loss, fullscreen exit and paste attempts are logged
+with server timestamps, capped at 200 events per attempt. Teachers can review these
+signals; they are incomplete and are **not evidence of cheating on their own**. No
+camera, audio, screen recording, lockdown browser or identity verification is provided.
+Discuss accessibility accommodations and monitoring expectations before an exam.
+
+## Portal assistant: immediate answers and optional live AI
+
+**Portal assistant** answers asynchronously without reloading the page and provides
+role-specific navigation links. Guided answers work with no external credentials.
+For flexible AI answers, use Vercel AI Gateway:
+
+1. Set `AI_GATEWAY_MODEL` to a text model ID from the current Gateway model catalog.
+   Choose a low-latency text model for short navigation questions; verify current
+   availability, school data handling requirements and pricing before choosing.
+2. On Vercel, the app can authenticate with its automatically supplied
+   `VERCEL_OIDC_TOKEN`. Outside Vercel, set `AI_GATEWAY_API_KEY` securely. An explicit
+   API key takes precedence. Never commit keys or paste them into a chat.
+3. Ensure the team's Gateway account has usable credits, configure a spend budget,
+   and redeploy after changing settings. Verify a question in the live portal and
+   inspect Gateway logs. Code tests use a simulated HTTP response; live model access
+   has not been verified by the repository test suite.
+
+The Python app calls the Gateway Chat Completions REST endpoint directly, with a
+15-second timeout. Questions contain at most 500 characters; AI replies are bounded.
+Atomic database limits allow 100 requests per user per UTC day and a three-second
+cooldown across instances. Missing configuration or service failures fall back to
+guided help; rate limits show a clear message. Only the question, role and fixed portal
+help instructions go to the provider. The assistant has no school-record query or
+write tools, no exam answer key and no external messaging tools. Users should not
+enter private student data in questions. AI text is rendered as plain text; navigation
+links come from the server's role allowlist. The assistant is a navigation helper,
+not an authoritative source of school policy or a general tutoring service.

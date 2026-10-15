@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app import db
-from app.models import Staff
+from app.models import Staff, TransportRoute
 
 staff_bp = Blueprint("staff", __name__)
 
@@ -63,6 +63,8 @@ def edit(staff_id):
 @login_required
 def delete(staff_id):
     member = Staff.query.get_or_404(staff_id)
+    if TransportRoute.query.filter_by(teacher_id=member.id).first():
+        abort(409, description='Reassign transport routes before removing this teacher.')
     db.session.delete(member)
     db.session.commit()
     flash("Staff record removed.", "info")

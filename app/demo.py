@@ -183,11 +183,13 @@ def seed_demo_parent_accounts(password):
         return dict(marker.summary), False
     if not 12 <= len(password) <= 128:
         raise ValueError('Use a demo password of 12 to 128 characters.')
-    guardians = Parent.query.filter(Parent.email.like('demo.parent%@schoolms.example.invalid')).all()
+    guardians = Parent.query.filter(db.or_(Parent.email.like('demo.parent%@schoolms.example.invalid'), Parent.children.any(Student.admission_no.like('DEMO/%')))).all()
     if not guardians:
         raise ValueError('Load the expanded school demo dataset first.')
     pending = []
     for guardian in guardians:
+        if guardian.user_id:
+            continue
         match = re.fullmatch(r'demo\.parent(\d{2})@schoolms\.example\.invalid', guardian.email or '')
         if not match or guardian.user_id:
             continue

@@ -16,8 +16,14 @@
   <div class="school-label">{{ school_name|upper }}</div>
   {% macro nav(endpoint, label, symbol) %}<a class="nav-link {% if request.endpoint == endpoint %}active{% endif %}" href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}><span class="nav-symbol" aria-hidden="true">{{ symbol }}</span>{{ label }}</a>{% endmacro %}
   <div class="nav-section">Workspace</div>
+  {{ nav('mail.index', 'School inbox', '✉') }}
+  {{ nav('hub.help_chat', 'Portal assistant', '?') }}
+  {{ nav('transport.index', 'School transport', '↔') }}
   {{ nav('dashboard.index' if nav_user.role == 'admin' else 'family.home' if nav_user.role == 'parent' else 'portal.home', 'Overview', '▦') }}
   {% if nav_user.role != 'parent' %}
+  {{ nav('hub.index', 'Digital learning hub', '▧') }}
+  {{ nav('hub.collaborate', 'Collaboration', '◎') }}
+  {{ nav('exams.index', 'Online exams', '✓') }}
   {{ nav('learning.courses', 'My courses' if nav_user.role != 'admin' else 'All courses', '▤') }}
   {{ nav('learning.assignments', 'Assignments', '✓') }}
   {{ nav('learning.calendar', 'Calendar', '◷') }}

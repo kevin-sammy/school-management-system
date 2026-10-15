@@ -86,6 +86,9 @@ def delete(student_id):
     student = Student.query.get_or_404(student_id)
     if StudentAccount.query.filter_by(student_id=student.id).first() or Submission.query.filter_by(student_id=student.id).first():
         abort(409, description='This student has a portal account or submitted coursework. Set their status to inactive to preserve academic records.')
+    from app.models import TransportPassenger, ExamAttempt
+    if TransportPassenger.query.filter_by(student_id=student.id).first() or ExamAttempt.query.filter_by(student_id=student.id).first():
+        abort(409, description='Preserve transport and exam records by setting the student inactive.')
     db.session.delete(student)
     db.session.commit()
     flash("Student record deleted.", "info")
