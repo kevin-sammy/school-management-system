@@ -72,6 +72,14 @@ def create_app(test_config=None):
     app.register_blueprint(learning_bp)
     from app.routes.family import family_bp
     app.register_blueprint(family_bp)
+    from app.routes.transport import transport_bp
+    from app.routes.mail import mail_bp
+    app.register_blueprint(transport_bp)
+    app.register_blueprint(mail_bp)
+    from app.routes.hub import hub_bp
+    from app.routes.exams import exams_bp
+    app.register_blueprint(hub_bp)
+    app.register_blueprint(exams_bp)
     from app import identifiers  # Register automatic IDs for all ORM inserts.
     from app.startup import install_startup
     install_startup(app)
@@ -93,13 +101,15 @@ def create_app(test_config=None):
         db.create_all()
         try:
             summary, created = seed_demo_dataset(password)
+            from app.sample_names import normalize_sample_accounts
+            normalize_sample_accounts()
         except Exception as error:
             db.session.rollback()
             raise click.ClickException(str(error)) from error
         click.echo("Demo dataset created." if created else "Demo dataset already loaded; no duplicates added.")
         for table, count in summary.items():
             click.echo(f"{table}: {count}")
-        click.echo("Student login: demo.student001; teacher login: demo.teacher01; parent login: demo.parent01.")
+        click.echo("See Accounts & scheduling for name-based teacher, student and parent usernames.")
         click.echo("An initial demo.admin account is created only when no administrator exists.")
         click.echo("New demo accounts use the password you supplied; existing passwords are unchanged.")
 

@@ -19,13 +19,15 @@ def seed_demo_data(app):
         password = os.environ.get('DEMO_PASSWORD') or secrets.token_urlsafe(18)
         try:
             summary, created = seed_demo_dataset(password)
+            from app.sample_names import normalize_sample_accounts
+            normalize_sample_accounts()
         except Exception:
             db.session.rollback()
             raise
         if created:
             print('Expanded demo ready: 60 students, 6 teachers, 36 courses.')
             print('Administrator: demo.admin')
-            print('Teacher: demo.teacher01 | Student: demo.student001 | Parent: demo.parent01')
+            print('Teacher/student/parent usernames are listed under Accounts & scheduling.')
             print(f'Local demo password: {password}')
 
 

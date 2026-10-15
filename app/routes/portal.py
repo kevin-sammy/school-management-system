@@ -269,7 +269,8 @@ def accounts():
             abort(400)
         flash('Saved successfully.', 'success')
         return redirect(url_for('portal.accounts'))
-    return render_template('portal/accounts.html', students=Student.query.filter_by(status='active').all(),
+    from app.people import profile_names
+    return render_template('portal/accounts.html', names=profile_names(User.query.all()), students=Student.query.filter_by(status='active').all(),
                            staff=Staff.query.filter_by(status='active', user_id=None).all(),
                            parents=Parent.query.filter_by(user_id=None).all(),
                            teachers=User.query.filter_by(role='teacher').all(), classes=TeachingClass.query.all(),
@@ -320,6 +321,8 @@ def demo_data():
             db.session.rollback()
             flash('The import conflicted with another request. Refresh to check whether the dataset was loaded.', 'warning')
             return redirect(url_for('portal.demo_data'))
+        from app.sample_names import normalize_sample_accounts
+        normalize_sample_accounts()
         flash('Expanded demo data is ready.' if created else 'Demo data is already loaded. No duplicates were added.', 'success')
         return redirect(url_for('portal.demo_data'))
     ready = inspect(db.engine).has_table('demo_datasets')

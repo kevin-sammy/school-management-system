@@ -297,3 +297,142 @@ class IdentifierCounter(db.Model):
     __tablename__ = 'identifier_counters'
     namespace = db.Column(db.String(40), primary_key=True)
     last_value = db.Column(db.Integer, nullable=False)
+
+
+class SampleAccount(db.Model):
+    __tablename__ = 'sample_accounts'
+    sample_key = db.Column(db.String(40), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True, nullable=False)
+    user = db.relationship('User')
+
+
+class TransportRoute(db.Model):
+    __tablename__ = 'transport_routes'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    vehicle_registration = db.Column(db.String(30), nullable=False)
+    driver_name = db.Column(db.String(100), nullable=False)
+    driver_phone = db.Column(db.String(30))
+    teacher_id = db.Column(db.Integer, db.ForeignKey('staff.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='active')
+    notes = db.Column(db.String(500))
+    teacher = db.relationship('Staff')
+
+
+class TransportPassenger(db.Model):
+    __tablename__ = 'transport_passengers'
+    id = db.Column(db.Integer, primary_key=True)
+    route_id = db.Column(db.Integer, db.ForeignKey('transport_routes.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), unique=True, nullable=False)
+    home_area = db.Column(db.String(100), nullable=False)
+    pickup_point = db.Column(db.String(200), nullable=False)
+    pickup_time = db.Column(db.String(5), nullable=False)
+    dropoff_time = db.Column(db.String(5), nullable=False)
+    student = db.relationship('Student')
+    route = db.relationship('TransportRoute', backref='passengers')
+
+
+class SchoolConversation(db.Model):
+    __tablename__ = 'school_conversations'
+    id = db.Column(db.Integer, primary_key=True)
+    subject = db.Column(db.String(150), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
+class MailParticipant(db.Model):
+    __tablename__ = 'mail_participants'
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('school_conversations.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    last_read_at = db.Column(db.DateTime)
+    user = db.relationship('User')
+    conversation = db.relationship('SchoolConversation', backref='participants')
+    __table_args__ = (db.UniqueConstraint('conversation_id', 'user_id'),)
+
+
+class SchoolMessage(db.Model):
+    __tablename__ = 'school_messages'
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('school_conversations.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    sender = db.relationship('User')
+    conversation = db.relationship('SchoolConversation', backref=db.backref('messages', order_by='SchoolMessage.created_at'))
+
+
+class CollaborationRoom(db.Model):
+    __tablename__ = 'collaboration_rooms'
+    id = db.Column(db.Integer, primary_key=True)
+    teaching_class_id = db.Column(db.Integer, db.ForeignKey('teaching_classes.id'), nullable=False)
+    title = db.Column(db.String(120), nullable=False)
+    platform = db.Column(db.String(30), nullable=False)
+    join_url = db.Column(db.String(2000), nullable=False)
+    schedule = db.Column(db.String(200), nullable=False, default='')
+    teaching_class = db.relationship('TeachingClass')
+
+
+class OnlineExam(db.Model):
+    __tablename__ = 'online_exams'
+    id = db.Column(db.Integer, primary_key=True)
+    teaching_class_id = db.Column(db.Integer, db.ForeignKey('teaching_classes.id'), nullable=False)
+    title = db.Column(db.String(120), nullable=False)
+    duration_minutes = db.Column(db.Integer, nullable=False)
+    published = db.Column(db.Boolean, nullable=False, default=False)
+    results_released = db.Column(db.Boolean, nullable=False, default=False)
+    teaching_class = db.relationship('TeachingClass')
+
+
+class ExamQuestion(db.Model):
+    __tablename__ = 'exam_questions'
+    id = db.Column(db.Integer, primary_key=True)
+    exam_id = db.Column(db.Integer, db.ForeignKey('online_exams.id'), nullable=False)
+    prompt = db.Column(db.Text, nullable=False)
+    kind = db.Column(db.String(20), nullable=False)
+    choices = db.Column(db.JSON, nullable=False, default=list)
+    correct_choice = db.Column(db.Integer)
+    points = db.Column(db.Integer, nullable=False)
+    exam = db.relationship('OnlineExam', backref=db.backref('questions', order_by='ExamQuestion.id'))
+
+
+class ExamAttempt(db.Model):
+    __tablename__ = 'exam_attempts'
+    id = db.Column(db.Integer, primary_key=True)
+    exam_id = db.Column(db.Integer, db.ForeignKey('online_exams.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    started_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    deadline_at = db.Column(db.DateTime, nullable=False)
+    submitted_at = db.Column(db.DateTime)
+    reviewed = db.Column(db.Boolean, nullable=False, default=False)
+    exam = db.relationship('OnlineExam', backref='attempts')
+    student = db.relationship('Student')
+    __table_args__ = (db.UniqueConstraint('exam_id', 'student_id'),)
+
+
+class ExamAnswer(db.Model):
+    __tablename__ = 'exam_answers'
+    id = db.Column(db.Integer, primary_key=True)
+    attempt_id = db.Column(db.Integer, db.ForeignKey('exam_attempts.id'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('exam_questions.id'), nullable=False)
+    answer = db.Column(db.Text, nullable=False, default='')
+    score = db.Column(db.Float)
+    attempt = db.relationship('ExamAttempt', backref='answers')
+    question = db.relationship('ExamQuestion')
+    __table_args__ = (db.UniqueConstraint('attempt_id', 'question_id'),)
+
+
+class ExamEvent(db.Model):
+    __tablename__ = 'exam_events'
+    id = db.Column(db.Integer, primary_key=True)
+    attempt_id = db.Column(db.Integer, db.ForeignKey('exam_attempts.id'), nullable=False)
+    kind = db.Column(db.String(30), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    attempt = db.relationship('ExamAttempt', backref=db.backref('events', order_by='ExamEvent.id'))
+
+
+class ChatAllowance(db.Model):
+    __tablename__ = 'chat_allowances'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    day = db.Column(db.String(10), nullable=False)
+    count = db.Column(db.Integer, nullable=False)
+    next_request_at = db.Column(db.DateTime, nullable=False)

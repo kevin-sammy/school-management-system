@@ -1,7 +1,7 @@
 import re
 import pytest
 from app import create_app, db
-from app.models import User, Student, DemoDataset
+from app.models import User, Student, DemoDataset, SampleAccount
 
 
 @pytest.fixture
@@ -41,7 +41,7 @@ def test_bootstrap_admin_and_hosted_demo_flow(empty_app, monkeypatch):
         assert Student.query.count() == 60
         assert User.query.filter_by(role='admin').count() == 1
         assert User.query.filter_by(username='demo.admin').first() is None
-        assert User.query.filter_by(username='demo.student001').first().check_password('school-demo-password-123')
+        assert db.session.get(SampleAccount, 'student001').user.check_password('school-demo-password-123')
 
 
 def test_bootstrap_never_resets_existing_admin(empty_app, monkeypatch):
