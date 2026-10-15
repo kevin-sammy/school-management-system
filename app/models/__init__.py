@@ -282,3 +282,11 @@ class DemoDataset(db.Model):
     key = db.Column(db.String(80), primary_key=True)
     summary = db.Column(db.JSON, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
+class AdminRecovery(db.Model):
+    """Consumed owner-configured recovery requests; no password fingerprints."""
+    __tablename__ = 'admin_recoveries'
+    request_id = db.Column(db.String(80), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    completed_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

@@ -167,3 +167,29 @@ calendar filters, repeatable demo generation and fresh/failed database startup.
 Not included: quizzes, file uploads, direct messaging, password recovery, parent
 self-service, mobile apps or external PowerSchool synchronization. This is not a
 PowerSchool product and does not claim commercial feature parity.
+
+## Recover a forgotten administrator username or password
+
+If an administrator already exists, `BOOTSTRAP_ADMIN_*` deliberately does not
+change that account. Use the following **Production** environment variables for a
+one-time recovery, then redeploy:
+
+| Variable | Value |
+|---|---|
+| `ADMIN_RECOVERY_USERNAME` | Desired username, for example `admin` |
+| `ADMIN_RECOVERY_PASSWORD` | Your new private password, 12–128 characters; store as Secret |
+| `ADMIN_RECOVERY_ID` | A unique request name, for example `restore-admin-20261015-1` |
+
+Visit `/login/admin` after deployment. The first request applies the recovery.
+If there is exactly one administrator, it keeps that account's ID and email,
+updates its username/password, and preserves school records. If no administrator
+exists, it creates one. It never promotes a student/teacher account. If multiple
+administrators exist, specify the exact existing administrator username.
+
+After successful login, remove the three recovery variables and redeploy. A
+consumed recovery ID does not run again, even if its environment settings remain,
+so later password changes survive cold starts. For another intentional recovery,
+choose a new request ID. Password values/fingerprints are not stored in the
+recovery marker, and there is no public password-reset endpoint. Whoever controls
+these settings already controls the deployment; do not share the password or
+commit it to the repository.
