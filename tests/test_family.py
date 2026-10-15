@@ -61,12 +61,12 @@ def test_admin_creates_linked_parent_account(client,app):
         db.session.commit()
         profile_id=guardian.id
     login(client,'admin')
-    data={'kind':'account','role':'parent','profile_id':profile_id,'username':'newguardian','email':'guardian@example.invalid','password':'guardian-password-123'}
+    data={'kind':'account','role':'parent','profile_id':profile_id,'username':'nguardian','email':'guardian@example.invalid','password':'guardian-password-123'}
     assert post(client,'/portal/accounts',data).status_code==302
     with app.app_context():
-        assert db.session.get(Parent,profile_id).user_id==User.query.filter_by(username='newguardian').first().id
+        assert db.session.get(Parent,profile_id).user_id==User.query.filter_by(username='nguardian').first().id
     post(client,'/logout',{})
-    assert post(client,'/login/parent',{'username':'newguardian','password':'guardian-password-123'}).status_code==302
+    assert post(client,'/login/parent',{'username':'nguardian','password':'guardian-password-123'}).status_code==302
     assert b'Alice Learner' in client.get('/family/').data
 
 

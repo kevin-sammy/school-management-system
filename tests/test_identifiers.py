@@ -89,7 +89,7 @@ def test_admin_forms_do_not_accept_supplied_identifiers(client, app, monkeypatch
     assert b'name="admission_no"' not in client.get('/students/add').data
     assert b'name="staff_no"' not in client.get('/staff/add').data
     assert post(client,'/students/add',{'first_name':'Auto','last_name':'Student','class_name':'Grade 7','admission_no':'MANUAL-OVERRIDE'}).status_code==302
-    assert post(client,'/staff/add',{'first_name':'Auto','last_name':'Teacher','role':'Teacher','staff_no':'MANUAL-OVERRIDE'}).status_code==302
+    assert post(client,'/staff/add',{'first_name':'Auto','last_name':'Teacher','role':'Teacher','staff_no':'MANUAL-OVERRIDE','email':'auto.teacher@example.test','initial_password':'teacher-password-123'}).status_code==302
     with app.app_context():
         learner=Student.query.filter_by(first_name='Auto').first()
         staff=Staff.query.filter_by(first_name='Auto').first()

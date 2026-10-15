@@ -1,8 +1,8 @@
 """Shared authorization and CSRF protection for all application routes."""
 import hmac
 import secrets
-from flask import abort, request, session
-from flask_login import current_user
+from flask import abort, request, session, redirect, url_for
+from flask_login import current_user, logout_user
 
 
 def csrf_token():
@@ -21,6 +21,12 @@ def install_security(app):
             provided = request.form.get('csrf_token', '')
             if not expected or not hmac.compare_digest(expected.encode(), provided.encode()):
                 abort(400, description='Your form expired. Refresh the page and try again.')
+        if current_user.is_authenticated:
+            from app.account_provisioning import inactive_teacher
+            if inactive_teacher(current_user):
+                logout_user()
+                session.clear()
+                return redirect(url_for('auth.login', role='teacher'))
         # The original modules expose school-wide records and are admin-only.
         if current_user.is_authenticated and request.blueprint in {
             'students', 'staff', 'attendance', 'grades', 'fees', 'parents'
