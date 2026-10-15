@@ -74,6 +74,10 @@ def seed_demo_dataset(password, today=None):
                    email=f'demo.parent{i+1:02d}@schoolms.example.invalid', relationship='guardian')
                for i in range(30)]
     db.session.flush()
+    for i, guardian in enumerate(parents):
+        parent_user = account(f'demo.parent{i+1:02d}', 'parent')
+        db.session.flush()
+        guardian.user_id = parent_user.id
     for i, teacher in enumerate(teachers):
         add(Staff, staff_no=f'DEMO/T{i+1:02d}', first_name=['Grace', 'John', 'Mary', 'Peter', 'Sarah', 'James'][i],
             last_name=LAST_NAMES[i], role='Teacher', department=SUBJECTS[i], email=teacher.email,
@@ -165,5 +169,40 @@ def seed_demo_dataset(password, today=None):
             message='Fictional demonstration notice. Explore your courses, academic records and school calendar.',
             sent_by='demo.generator')
     db.session.add(DemoDataset(key=DATASET_KEY, summary=summary))
+    db.session.commit()
+    return summary, True
+
+
+
+def seed_demo_parent_accounts(password):
+    """Add parent logins to an already loaded pre-parent demo, once."""
+    import re
+    key = 'schoolms-demo-parent-accounts-v1'
+    marker = db.session.get(DemoDataset, key)
+    if marker:
+        return dict(marker.summary), False
+    if not 12 <= len(password) <= 128:
+        raise ValueError('Use a demo password of 12 to 128 characters.')
+    guardians = Parent.query.filter(Parent.email.like('demo.parent%@schoolms.example.invalid')).all()
+    if not guardians:
+        raise ValueError('Load the expanded school demo dataset first.')
+    pending = []
+    for guardian in guardians:
+        match = re.fullmatch(r'demo\.parent(\d{2})@schoolms\.example\.invalid', guardian.email or '')
+        if not match or guardian.user_id:
+            continue
+        username = f'demo.parent{match.group(1)}'
+        if User.query.filter(db.or_(User.username == username, User.email == guardian.email)).first():
+            raise ValueError('A demo parent username or email is already in use. Existing accounts were preserved.')
+        pending.append((guardian, username))
+    credential = User(username='unused',email='unused@example.invalid',role='parent')
+    credential.set_password(password)
+    for guardian, username in pending:
+        user = User(username=username,email=guardian.email,role='parent',password_hash=credential.password_hash)
+        db.session.add(user)
+        db.session.flush()
+        guardian.user_id = user.id
+    summary = {'parent_logins':len(pending)}
+    db.session.add(DemoDataset(key=key,summary=summary))
     db.session.commit()
     return summary, True

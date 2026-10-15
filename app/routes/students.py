@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app import db
+from app.identifiers import current_year
 from app.models import Student, Parent, Grade, Attendance, FeeRecord, StudentAccount, Submission
 
 students_bp = Blueprint("students", __name__)
@@ -43,21 +44,20 @@ def add():
     parents = Parent.query.order_by(Parent.last_name).all()
     if request.method == "POST":
         student = Student(
-            admission_no=request.form["admission_no"],
             first_name=request.form["first_name"],
             last_name=request.form["last_name"],
             date_of_birth=request.form.get("date_of_birth"),
             gender=request.form.get("gender"),
             class_name=request.form["class_name"],
             stream=request.form.get("stream"),
-            year_enrolled=request.form.get("year_enrolled", 2026),
+            year_enrolled=request.form.get("year_enrolled") or current_year(),
             parent_id=request.form.get("parent_id") or None
         )
         db.session.add(student)
         db.session.commit()
-        flash(f"Student {student.full_name} registered successfully!", "success")
+        flash(f"Student {student.full_name} registered successfully! ID: {student.admission_no}", "success")
         return redirect(url_for("students.view", student_id=student.id))
-    return render_template("students/form.html", student=None, parents=parents, action="Add")
+    return render_template("students/form.html", student=None, parents=parents, action="Add", current_year=current_year())
 
 
 @students_bp.route("/<int:student_id>/edit", methods=["GET", "POST"])

@@ -26,7 +26,6 @@ def index():
 def add():
     if request.method == "POST":
         member = Staff(
-            staff_no=request.form["staff_no"],
             first_name=request.form["first_name"],
             last_name=request.form["last_name"],
             role=request.form["role"],
@@ -37,7 +36,7 @@ def add():
         )
         db.session.add(member)
         db.session.commit()
-        flash(f"{member.full_name} added to staff.", "success")
+        flash(f"{member.full_name} added to staff. ID: {member.staff_no}", "success")
         return redirect(url_for("staff.index"))
     return render_template("staff/form.html", member=None, action="Add")
 

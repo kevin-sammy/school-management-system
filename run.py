@@ -25,7 +25,7 @@ def seed_demo_data(app):
         if created:
             print('Expanded demo ready: 60 students, 6 teachers, 36 courses.')
             print('Administrator: demo.admin')
-            print('Teacher: demo.teacher01 | Student: demo.student001')
+            print('Teacher: demo.teacher01 | Student: demo.student001 | Parent: demo.parent01')
             print(f'Local demo password: {password}')
 
 

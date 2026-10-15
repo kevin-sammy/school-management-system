@@ -24,7 +24,7 @@ def test_expanded_demo_counts_links_and_repeatability(app):
         assert summary['course_replies'] == 108
         assert summary['lessons'] == 36
         assert summary['fee_records'] == 105
-        assert summary['users'] == 66  # Existing admin is kept; no extra demo admin.
+        assert summary['users'] == 96  # Includes 30 linked parents; existing admin is kept.
         assert Student.query.count() == original_students + 60
         assert User.query.filter_by(username='admin').first().password_hash == original_admin
         assert User.query.filter_by(username='demo.admin').first() is None

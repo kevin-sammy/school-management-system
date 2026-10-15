@@ -9,8 +9,9 @@
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="row g-3">
         <div class="col-md-6">
-          <label class="form-label small fw-semibold">Staff No *</label>
-          <input type="text" name="staff_no" class="form-control" value="{{ member.staff_no if member else '' }}" required>
+          <label class="form-label small fw-semibold">Staff ID</label>
+          <input type="text" class="form-control" value="{{ member.staff_no if member else 'Assigned automatically when saved' }}" readonly aria-label="Staff ID" aria-describedby="staff-id-help">
+          <small id="staff-id-help" class="text-muted">{{ 'This ID stays with the staff member.' if member else 'The system will assign a unique staff ID.' }}</small>
         </div>
         <div class="col-md-6">
           <label class="form-label small fw-semibold">Date Joined</label>

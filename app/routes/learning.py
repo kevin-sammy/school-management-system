@@ -16,12 +16,13 @@ from app.routes.portal import roles, student_profile, academic_classes, class_st
 learning_bp = Blueprint('learning', __name__, url_prefix='/learning')
 
 
-def visible_classes():
-    if current_user.role == 'admin':
+def visible_classes(viewer=None):
+    viewer = viewer or current_user
+    if viewer.role == 'admin':
         return TeachingClass.query.order_by(TeachingClass.class_name, TeachingClass.subject).all()
-    if current_user.role == 'teacher':
-        return TeachingClass.query.filter_by(teacher_id=current_user.id).order_by(TeachingClass.class_name, TeachingClass.subject).all()
-    return academic_classes(student_profile())
+    if viewer.role == 'teacher':
+        return TeachingClass.query.filter_by(teacher_id=viewer.id).order_by(TeachingClass.class_name, TeachingClass.subject).all()
+    return academic_classes(student_profile(viewer))
 
 
 def course_access(class_id, write=False):
@@ -35,10 +36,11 @@ def course_access(class_id, write=False):
     abort(403)
 
 
-def workspace_context():
-    classes = visible_classes()
+def workspace_context(viewer=None):
+    viewer = viewer or current_user
+    classes = visible_classes(viewer)
     ids = [c.id for c in classes]
-    student = student_profile() if current_user.role == 'student' else None
+    student = student_profile(viewer) if viewer.role == 'student' else None
     assignments = Assignment.query.filter(Assignment.teaching_class_id.in_(ids)).order_by(Assignment.due_date).all()
     # Do not expose a student's submissions from a previous class after transfer.
     submissions = {s.assignment_id: s for s in Submission.query.filter(
@@ -57,7 +59,7 @@ def workspace_context():
     upcoming = [a for a in pending if a.due_date >= date.today().isoformat()]
     missing = [a for a in pending if a.due_date < date.today().isoformat()] if student else []
     grade_titles = {a.grade_id: a.submission.assignment.title for a in SubmissionAssessment.query.join(Submission).filter(Submission.student_id == student.id, SubmissionAssessment.grade_id.isnot(None)).all()} if student else {}
-    return dict(grade_titles=grade_titles, classes=classes, student=student, assignments=assignments, lessons=lessons,
+    return dict(viewer=viewer, grade_titles=grade_titles, classes=classes, student=student, assignments=assignments, lessons=lessons,
                 notices=notices, submissions=submissions, assessments=assessments,
                 posts=posts, upcoming=upcoming, missing=missing, today=date.today().isoformat())
 

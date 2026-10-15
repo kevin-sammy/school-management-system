@@ -1,7 +1,7 @@
-# SchoolMS · Connected SIS and Learning Workspace
+# SchoolMS · Kevin Brook International Schools
 
 An independent Flask school management system with separate administrator, teacher
-and student areas, inspired by common SIS/LMS workflows.
+student and parent areas, inspired by common SIS/LMS workflows.
 
 ## What users can do
 
@@ -10,6 +10,7 @@ and student areas, inspired by common SIS/LMS workflows.
 | Administrator | Student/staff/guardian records, finance, attendance, reports, accounts, course allocations, timetables, notices and demo-data generation |
 | Teacher | Allocated courses and class rosters, attendance, subject assessments, lesson modules/resources, announcements, discussions, assignments, feedback and gradebooks |
 | Student | Own grades, attendance, fee statements, timetable, course materials, discussions, submissions and teacher feedback |
+| Parent / Guardian | Linked children’s attendance, fee balances/statements, grades, timetable and school notices |
 
 Assignments support written submissions. Teachers can save draft scores, publish
 results into the SIS grade records, update a published result or return it to draft.
@@ -34,6 +35,7 @@ Existing populated databases are not automatically changed by `run.py`.
 | `/login/admin` | `demo.admin` on an empty demo database | Password printed locally or supplied through `DEMO_PASSWORD` |
 | `/login/teacher` | `demo.teacher01` through `demo.teacher06` | Password supplied when the dataset was first loaded |
 | `/login/student` | `demo.student001` through `demo.student060` | Password supplied when the dataset was first loaded |
+| `/login/parent` | `demo.parent01` through `demo.parent30` | Demo password, or the password chosen when upgrading parent logins |
 
 The old `admin/admin123` demo credentials are not created by the new local runner.
 Existing accounts and passwords remain unchanged.
@@ -164,8 +166,7 @@ GitHub Actions runs the integration suite. Tests cover role/record boundaries,
 login, CSRF, provisioning, scores, submissions, grade publishing, discussions,
 calendar filters, repeatable demo generation and fresh/failed database startup.
 
-Not included: quizzes, file uploads, direct messaging, password recovery, parent
-self-service, mobile apps or external PowerSchool synchronization. This is not a
+Not included: quizzes, file uploads, direct messaging, email-based password recovery, mobile apps or external PowerSchool synchronization. This is not a
 PowerSchool product and does not claim commercial feature parity.
 
 ## Recover a forgotten administrator username or password
@@ -193,3 +194,50 @@ choose a new request ID. Password values/fingerprints are not stored in the
 recovery marker, and there is no public password-reset endpoint. Whoever controls
 these settings already controls the deployment; do not share the password or
 commit it to the repository.
+
+## Automatic student and staff IDs
+
+Student registration assigns an ID such as `STU-2026-00001`; adding staff assigns
+`STF-2026-00001`. Each type has its own sequence for the current calendar year in
+Africa/Nairobi. The final ID is allocated when the record is saved, displayed in
+the confirmation and existing profile/list pages, and shown read-only when editing.
+The registration forms do not require or accept manually supplied IDs.
+
+Existing identifiers are unchanged, including `DEMO/` values. Trusted Python/ORM
+imports can keep explicit IDs; missing IDs are automatically generated. Counters
+start after existing IDs matching the format and skip later imported values.
+Allocations are atomic PostgreSQL/SQLite upserts inside the record transaction:
+concurrent saves receive different IDs, failed transactions roll back allocations,
+and deleting a saved record does not rewind its counter. IDs stay unchanged when
+you edit a profile or enter another calendar year. New annual sequences start at
+one. Missing counter tables are created by the normal first-request initializer.
+
+## Kevin Brook International Schools · family portal and previews
+
+The school name is now **Kevin Brook International Schools**, shared across login,
+portal navigation and printable reports through the `SCHOOL_NAME` application setting.
+Existing admission/staff numbers and academic records are preserved.
+
+Parents/guardians sign in at `/login/parent` and are redirected to `/family/`.
+They can switch between linked children and view each child's attendance, fee
+invoices/payments/balance, published grades, weekly timetable and parent/school
+notices. This portal is read-only except for the account's own password change;
+it does not process online fee payments or expose another child's records.
+
+To issue a parent login, create the parent/guardian profile in **Parents & guardians**,
+link that profile in each child's Student record, then open **Accounts & scheduling**
+and create a **Parent / Guardian** account linked to that profile. Each guardian
+profile can have one login; one login can view all children attached to its profile.
+No linked children produces an explanatory empty state.
+
+Administrators can select **Dashboard previews** to view teacher, student and parent
+snapshots with the selected role's navigation. Preview links/actions are disabled,
+and the real administrator session is unchanged. For interactive testing, open a
+private/incognito window and use the respective role's issued credentials.
+
+Fresh demo datasets now include 30 linked parent accounts, `demo.parent01` through
+`demo.parent30`, using the supplied demo password. For demos loaded before this
+feature, select **Demo data → Add parent demo logins**, choose a password, and click
+**Add parent logins**. This adds missing demo guardian accounts once without resetting
+existing accounts. Parents are linked to their two existing demo children. The
+regular demo import retains its no-duplicates behavior.

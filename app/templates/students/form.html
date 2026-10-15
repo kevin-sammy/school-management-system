@@ -9,12 +9,13 @@
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="row g-3">
         <div class="col-md-6">
-          <label class="form-label small fw-semibold">Admission No *</label>
-          <input type="text" name="admission_no" class="form-control" value="{{ student.admission_no if student else '' }}" required>
+          <label class="form-label small fw-semibold">Student ID / Admission No</label>
+          <input type="text" class="form-control" value="{{ student.admission_no if student else 'Assigned automatically when saved' }}" readonly aria-label="Student ID" aria-describedby="student-id-help">
+          <small id="student-id-help" class="text-muted">{{ 'This ID stays with the student.' if student else 'The system will assign a unique student ID.' }}</small>
         </div>
         <div class="col-md-6">
           <label class="form-label small fw-semibold">Year Enrolled</label>
-          <input type="number" name="year_enrolled" class="form-control" value="{{ student.year_enrolled if student else 2026 }}">
+          <input type="number" name="year_enrolled" class="form-control" value="{{ student.year_enrolled if student else current_year }}">
         </div>
         <div class="col-md-6">
           <label class="form-label small fw-semibold">First Name *</label>
