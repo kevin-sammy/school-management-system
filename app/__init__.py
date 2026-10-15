@@ -3,6 +3,7 @@ app/__init__.py — Flask application factory
 """
 import os
 import secrets
+import click
 from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
@@ -24,6 +25,7 @@ def create_app(test_config=None):
 
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or "sqlite:///school.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 
     if test_config:
         app.config.update(test_config)
@@ -62,6 +64,8 @@ def create_app(test_config=None):
     app.register_blueprint(portal_bp, url_prefix="/portal")
     from app.routes.learning import learning_bp
     app.register_blueprint(learning_bp)
+    from app.startup import install_startup
+    install_startup(app)
     install_security(app)
 
     @app.cli.command("init-db")
@@ -69,6 +73,26 @@ def create_app(test_config=None):
         """Create missing tables without modifying existing records."""
         db.create_all()
         print("Database tables ready.")
+
+    @app.cli.command("seed-demo")
+    @click.option("--password", envvar="DEMO_PASSWORD", prompt="Demo password",
+                  hide_input=True, confirmation_prompt=True,
+                  help="Password for newly created demo accounts (12–128 characters).")
+    def seed_demo(password):
+        """Add the expanded fictional demo dataset without replacing existing records."""
+        from app.demo import seed_demo_dataset
+        db.create_all()
+        try:
+            summary, created = seed_demo_dataset(password)
+        except Exception as error:
+            db.session.rollback()
+            raise click.ClickException(str(error)) from error
+        click.echo("Demo dataset created." if created else "Demo dataset already loaded; no duplicates added.")
+        for table, count in summary.items():
+            click.echo(f"{table}: {count}")
+        click.echo("Student login: demo.student001; teacher login: demo.teacher01.")
+        click.echo("An initial demo.admin account is created only when no administrator exists.")
+        click.echo("New demo accounts use the password you supplied; existing passwords are unchanged.")
 
     for code, title in [(400, 'Check your request'), (403, 'This area is restricted'), (404, 'Page not found'), (409, 'This record is still linked')]:
         def handle_error(error, title=title):
