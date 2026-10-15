@@ -1,1 +1,8 @@
-{% extends 'base.html' %}{% block page_title %}Portal assistant{% endblock %}{% block content %}<h2>Portal assistant</h2><p>Ask how to use your school portal. Do not enter passwords or private student information. This assistant cannot change records or provide exam answers.</p><p>{{ "AI answers enabled. Your question is sent to our AI service; school records are not included." if ai_enabled else "Guided help mode. AI answers need hosting configuration." }}</p><div id="chat-log" role="log" aria-live="polite" class="card p-4 mb-3"><p>Hi! What would you like to find in the portal?</p></div><form id="chat-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label for="chat-message">Your question</label><input id="chat-message" name="message" class="form-control" maxlength="500" required autocomplete="off"><button class="btn btn-primary my-3" id="chat-send">Ask assistant</button><span id="chat-status" role="status"></span></form><div class="d-flex flex-wrap gap-2">{% for topic in topics %}<button type="button" class="btn btn-light" data-topic="{{ topic[0] }}">{{ topic[1] }}</button>{% endfor %}</div><script src="{{ url_for('static',filename='js/help.js') }}" defer></script>{% endblock %}
+{% extends 'base.html' %}
+{% block page_title %}Portal assistant{% endblock %}
+{% block content %}
+<h2>Portal assistant</h2>
+<p>Ask how to find your way around the school portal. This assistant cannot change records or provide exam answers.</p>
+<div class="assistant-page card p-4">{% set chat_id = 'page' %}{% include 'hub/_chat.html' %}</div>
+<script src="{{ url_for('static',filename='js/help.js') }}" defer></script>
+{% endblock %}

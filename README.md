@@ -334,3 +334,20 @@ write tools, no exam answer key and no external messaging tools. Users should no
 enter private student data in questions. AI text is rendered as plain text; navigation
 links come from the server's role allowlist. The assistant is a navigation helper,
 not an authoritative source of school policy or a general tutoring service.
+
+### Welcome chat popup
+
+A floating **How can we help?** button appears on sign-in and workspace pages.
+On the first page of a visit, a non-modal welcome popup opens after a short delay:
+“Thank you for visiting Kevin Brook International Schools. How may I help you?”
+Visitors can type a question or choose suggested topics; replies arrive in the popup
+without leaving the current page. Close it with × or Escape and reopen it with the
+help button. Automatic opening happens once per browser tab/visit and account, using
+sessionStorage when available; no conversation history is stored there.
+
+Public visitor questions receive sign-in and account-access guidance only, with no
+AI charges or access to school records. Authenticated users get role-specific portal
+help and the existing optional AI mode. The widget is hidden in administrator
+read-only previews, during active exam attempts, and when printing. It does not
+steal keyboard focus when it opens automatically. **School transport** is grouped
+under **Student information** in each signed-in role's sidebar.
