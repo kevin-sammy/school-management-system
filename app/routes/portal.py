@@ -210,26 +210,24 @@ def accounts():
             password = request.form.get('password', '')
             if not 12 <= len(password) <= 128:
                 abort(400, description='Use a password of 12 to 128 characters.')
-            user = User(username=text('username', 80), email=text('email', 120), role=role)
-            user.set_password(password)
-            db.session.add(user)
             try:
-                db.session.flush()
-                if role == 'student':
+                if role in {'teacher', 'parent'}:
+                    from app.account_provisioning import create_teacher_account, create_parent_account
+                    if role == 'parent':
+                        guardian = Parent.query.filter_by(id=integer('profile_id')).with_for_update().first_or_404()
+                        user = create_parent_account(guardian, password, text('email', 120))
+                    else:
+                        staff = Staff.query.filter_by(id=integer('profile_id')).with_for_update().first_or_404()
+                        user = create_teacher_account(staff, password, text('email', 120))
+                else:
+                    user = User(username=text('username', 80), email=text('email', 120), role=role)
+                    user.set_password(password)
+                    db.session.add(user)
+                    db.session.flush()
                     student = Student.query.get_or_404(integer('profile_id'))
                     if student.status != 'active':
                         abort(400)
                     db.session.add(StudentAccount(user_id=user.id, student_id=student.id))
-                elif role == 'parent':
-                    guardian = Parent.query.filter_by(id=integer('profile_id')).with_for_update().first_or_404()
-                    if guardian.user_id:
-                        abort(400, description='This parent or guardian already has a login.')
-                    guardian.user_id = user.id
-                else:
-                    staff = Staff.query.get_or_404(integer('profile_id'))
-                    if staff.user_id or staff.status != 'active' or staff.role.lower() != 'teacher':
-                        abort(400, description='Choose an active, unlinked teacher staff record.')
-                    staff.user_id = user.id
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
@@ -328,3 +326,15 @@ def demo_data():
     ready = inspect(db.engine).has_table('demo_datasets')
     marker = db.session.get(DemoDataset, DATASET_KEY) if ready else None
     return render_template('portal/demo_data.html', summary=marker.summary if marker else None)
+
+
+@portal_bp.route('/username-preview')
+@roles('admin')
+def username_preview():
+    from flask import jsonify
+    from app.account_provisioning import available_username
+    first = request.args.get('first_name', '').strip()
+    last = request.args.get('last_name', '').strip()
+    if not first or not last or len(first) > 60 or len(last) > 60:
+        abort(400)
+    return jsonify(username=available_username(first, last))

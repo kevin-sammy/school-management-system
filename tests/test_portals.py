@@ -142,7 +142,7 @@ def test_admin_account_classes_timetable_and_password(client, app):
     account = {'kind': 'account', 'role': 'teacher', 'profile_id': 1, 'username': 'newteacher', 'email': 'new@example.test', 'password': 'strong-password-123'}
     assert post(client, '/portal/accounts', account).status_code == 302
     with app.app_context():
-        teacher_id = User.query.filter_by(username='newteacher').first().id
+        teacher_id = User.query.filter_by(username='nteacher').first().id
         assert db.session.get(Staff, 1).user_id == teacher_id
     assert post(client, '/portal/accounts', {'kind': 'class', 'teacher_id': teacher_id, 'class_name': 'Grade 7', 'stream': 'East', 'subject': 'Science'}).status_code == 302
     lesson = {'kind': 'lesson', 'class_id': 1, 'day': 'Monday', 'start_time': '09:00', 'end_time': '10:00', 'room': 'A'}

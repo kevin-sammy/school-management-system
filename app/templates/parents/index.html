@@ -22,7 +22,7 @@
   </div>
   <div class="card-body p-0">
     <table class="table table-hover mb-0">
-      <thead><tr><th class="px-4">Name</th><th>Relationship</th><th>Phone</th><th>Email</th><th>Children</th></tr></thead>
+      <thead><tr><th class="px-4">Name</th><th>Relationship</th><th>Phone</th><th>Email</th><th>Portal username</th><th>Children</th></tr></thead>
       <tbody>
         {% for p in parents %}
         <tr>
@@ -30,6 +30,7 @@
           <td><span class="badge bg-light text-dark border">{{ p.relationship }}</span></td>
           <td class="text-muted small">{{ p.phone or '—' }}</td>
           <td class="text-muted small">{{ p.email or '—' }}</td>
+          <td>{% set account=users.get(p.user_id) %}{% if account %}<strong>{{ account.username }}</strong><br><a href="{{ url_for('auth.login',role='parent') }}">Parent login</a>{% else %}<a href="{{ url_for('portal.accounts') }}">Create parent login</a>{% endif %}</td>
           <td>
             {% for c in p.children %}
             <span class="badge bg-light text-dark border me-1">{{ c.full_name }}</span>
@@ -37,7 +38,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="5" class="text-center text-muted py-4">No parents found.</td></tr>
+        <tr><td colspan="6" class="text-center text-muted py-4">No parents found.</td></tr>
         {% endfor %}
       </tbody>
     </table>

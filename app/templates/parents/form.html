@@ -5,16 +5,16 @@
 <div class="card" style="max-width:520px;">
   <div class="card-header py-3">Add Parent / Guardian</div>
   <div class="card-body">
-    <form method="POST">
+    <form method="POST" data-profile-account data-account-kind="parent" data-preview-url="{{ url_for('portal.username_preview') }}" data-linked-username="">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label small fw-semibold">First Name *</label>
-          <input type="text" name="first_name" class="form-control" required>
+          <input type="text" name="first_name" maxlength="60" class="form-control" required>
         </div>
         <div class="col-md-6">
           <label class="form-label small fw-semibold">Last Name *</label>
-          <input type="text" name="last_name" class="form-control" required>
+          <input type="text" name="last_name" maxlength="60" class="form-control" required>
         </div>
         <div class="col-md-6">
           <label class="form-label small fw-semibold">Relationship</label>
@@ -29,9 +29,17 @@
         </div>
         <div class="col-12">
           <label class="form-label small fw-semibold">Email</label>
-          <input type="email" name="email" class="form-control">
+          <input type="email" name="email" class="form-control" required>
         </div>
       </div>
+      <section class="card p-3 mt-4" data-profile-login>
+        <h4>Parent / guardian portal login</h4>
+        <label class="form-label d-block">Username (automatic)<input class="form-control" readonly data-profile-username aria-describedby="parent-username-help"></label>
+        <small id="parent-username-help" class="text-muted" data-profile-status>Enter both names to generate the username.</small>
+        <label class="form-label d-block mt-3">Initial password<input class="form-control" type="password" name="initial_password" minlength="12" maxlength="128" autocomplete="new-password" required data-profile-password></label>
+        <p class="subtitle mt-3">Saving creates a Parent account. Share the username, this password and the login link privately. Link the guardian to their children in Students so they can see attendance and fees.</p>
+        <a href="{{ url_for('auth.login',role='parent') }}">Parent login page →</a>
+      </section>
       <div class="mt-4 d-flex gap-2">
         <button type="submit" class="btn btn-primary text-white">Save</button>
         <a href="{{ url_for('parents.index') }}" class="btn btn-outline-secondary">Cancel</a>
@@ -40,3 +48,5 @@
   </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}<script src="{{ url_for('static',filename='js/account-provisioning.js') }}" defer></script>{% endblock %}

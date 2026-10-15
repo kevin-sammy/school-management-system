@@ -19,7 +19,7 @@
   </div>
   <div class="card-body p-0">
     <table class="table table-hover mb-0">
-      <thead><tr><th class="px-4">Staff No</th><th>Name</th><th>Role</th><th>Department</th><th>Contact</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th class="px-4">Staff No</th><th>Name</th><th>Role</th><th>Department</th><th>Contact</th><th>Status</th><th>Portal username</th><th></th></tr></thead>
       <tbody>
         {% for s in staff %}
         <tr>
@@ -29,6 +29,7 @@
           <td class="text-muted small">{{ s.department or '—' }}</td>
           <td class="text-muted small">{{ s.phone or s.email or '—' }}</td>
           <td><span class="badge {% if s.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">{{ s.status }}</span></td>
+          <td>{% set account=users.get(s.user_id) %}{% if account %}<strong>{{ account.username }}</strong><br><a href="{{ url_for('auth.login',role='teacher') }}">Teacher login</a>{% elif s.role|lower=='teacher' %}<a href="{{ url_for('staff.edit',staff_id=s.id) }}">Create teacher login</a>{% else %}—{% endif %}</td>
           <td>
             <a href="{{ url_for('staff.edit', staff_id=s.id) }}" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
             <form method="POST" action="{{ url_for('staff.delete', staff_id=s.id) }}" class="d-inline" onsubmit="return confirm('Remove {{ s.full_name }}?')">
@@ -38,7 +39,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="text-center text-muted py-4">No staff found.</td></tr>
+        <tr><td colspan="8" class="text-center text-muted py-4">No staff found.</td></tr>
         {% endfor %}
       </tbody>
     </table>

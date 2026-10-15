@@ -381,3 +381,37 @@ a structure does not issue invoices, record payments or change outstanding balan
 Continue recording actual invoices/payments under Finance. Existing student fee
 statements and balances are preserved. The normal startup initializer creates the
 new tables on deployment without replacing the existing database.
+
+## Automatic teacher and parent logins
+
+When adding an active **Teacher** under Staff or a **Parent / Guardian** under
+Parents & guardians, enter both names, a unique valid email address and an initial
+password of 12–128 characters. The username preview updates as the names are typed:
+first initial plus last name, lowercase, with spaces/punctuation removed and common
+accented characters normalized. For example, Grace Kamau becomes `gkamau` and Mary
+Otieno becomes `motieno`. Duplicate usernames across all roles receive suffixes
+starting at 2 (`gkamau2`, `gkamau3`). The preview does not reserve a name; the final
+username is allocated at save time and shown in the confirmation and directory.
+
+Saving creates and links a **Teacher** or **Parent** User account in the same
+transaction as its profile. Submitted role/username overrides cannot grant admin
+rights or replace an existing account. Initial passwords are hashed, not stored in
+plaintext or included in flash messages/cookies. Share the chosen password and
+`/login/teacher` or `/login/parent` link privately. Users can change their own password
+under Account settings; email delivery remains disconnected. Use a separate/private
+browser window when testing credentials while keeping your administrator session.
+
+For an existing unlinked teacher, open Staff → Edit and provide the initial password
+to create the account when saving it as active. Legacy teacher and parent profiles
+can also be linked through Accounts & scheduling; their usernames follow the same
+automatic rule. Other staff job titles do not get a login account automatically.
+For a new parent, link their profile to the appropriate Student records so their
+family dashboard shows those children; an unlinked parent has an empty dashboard.
+
+Existing linked accounts keep their usernames and passwords when profile names
+are edited. Teachers with portal accounts are archived by setting status to inactive;
+they cannot log in and existing sessions lose access on the next request. Linked
+teacher profiles cannot be deleted or switched to another staff job title without
+preserving their account/class records. Username previews and account creation are
+administrator-only. PostgreSQL serializes allocations with a transaction advisory
+lock; uniqueness constraints and rollback protect against conflicting writes.
