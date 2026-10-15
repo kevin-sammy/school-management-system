@@ -65,7 +65,7 @@ def edit(staff_id):
             abort(400, description='Keep linked teachers in the Teacher role; set their status to inactive to disable access.')
         member.first_name = text("first_name", 60)
         member.last_name = text("last_name", 60)
-        member.role = request.form["role"]
+        member.role = text('role', 40)
         member.department = request.form.get("department")
         member.phone = request.form.get("phone")
         member.email = request.form.get("email")
@@ -73,6 +73,12 @@ def edit(staff_id):
         if member.status not in ['active', 'inactive']:
             abort(400)
         try:
+            if user and request.form.get('initial_password', ''):
+                if user.role != 'teacher':
+                    abort(403)
+                user = User.query.filter_by(id=user.id).populate_existing().with_for_update().one()
+                from app.account_passwords import reset_portal_password
+                reset_portal_password(user, request.form['initial_password'], request.form.get('confirm_password', ''))
             if not user and member.role.lower() == 'teacher' and member.status == 'active':
                 user = create_teacher_account(member, request.form.get('initial_password', ''))
             db.session.commit()

@@ -469,3 +469,17 @@ class FeeStructureLine(db.Model):
     optional = db.Column(db.Boolean, nullable=False, default=False)
     structure = db.relationship('FeeStructure', backref=db.backref('lines', order_by='FeeStructureLine.id', cascade='all, delete-orphan'))
     __table_args__ = (db.CheckConstraint('amount_cents >= 0 AND amount_cents <= 1000000000'),)
+
+
+class PortalPasswordChange(db.Model):
+    __tablename__ = 'portal_password_changes'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    changed_at = db.Column(db.DateTime, nullable=False)
+
+
+class PortalPasswordRequest(db.Model):
+    __tablename__ = 'portal_password_requests'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    requested_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    status = db.Column(db.String(20), nullable=False, default='pending')
+    user = db.relationship('User')

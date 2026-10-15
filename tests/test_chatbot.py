@@ -85,7 +85,7 @@ def test_public_welcome_help_never_calls_ai_or_exposes_workspace_links(client,ap
     result=post(client,'/hub/help',{'message':'I forgot my password'}).json
     assert result['mode']=='guided' and not result['answer']
     assert any('school administrator' in r['text'] for r in result['replies'])
-    assert all(r['url']=='/login' for r in result['replies'])
+    assert all(r['url'] in ['/login','/forgot-password'] for r in result['replies'])
     assert client.post('/hub/help',data={'message':'login'}).status_code==400
     with app.app_context():
         assert ChatAllowance.query.count()==0

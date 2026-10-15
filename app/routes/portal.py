@@ -280,13 +280,17 @@ def accounts():
 def password():
     if request.method == 'POST':
         value = request.form.get('password', '')
-        if not current_user.check_password(request.form.get('current_password', '')):
+        user = User.query.filter_by(id=current_user.id).populate_existing().with_for_update().one()
+        if not user.check_password(request.form.get('current_password', '')):
             flash('Current password is incorrect.', 'danger')
         elif not 12 <= len(value) <= 128 or value != request.form.get('confirm_password'):
             flash('Use 12–128 characters and matching confirmation.', 'danger')
         else:
-            current_user.set_password(value)
+            user.set_password(value)
+            from app.account_passwords import mark_password_changed, stamp_login
+            mark_password_changed(user)
             db.session.commit()
+            stamp_login()
             flash('Password updated.', 'success')
             return redirect(url_for('dashboard.index'))
     return render_template('portal/password.html')
@@ -338,3 +342,30 @@ def username_preview():
     if not first or not last or len(first) > 60 or len(last) > 60:
         abort(400)
     return jsonify(username=available_username(first, last))
+
+
+@portal_bp.route('/accounts/<int:user_id>/password', methods=['GET', 'POST'])
+@roles('admin')
+def reset_account_password(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.role not in {'teacher', 'student', 'parent'}:
+        abort(403)
+    if request.method == 'POST':
+        from app.account_passwords import reset_portal_password
+        user = User.query.filter_by(id=user.id).populate_existing().with_for_update().one()
+        reset_portal_password(user, request.form.get('password', ''), request.form.get('confirm_password', ''))
+        db.session.commit()
+        flash(f'Password updated for {user.username}. Share the new password privately.', 'success')
+        return redirect(url_for('portal.accounts'))
+    from app.people import profile_names
+    return render_template('portal/reset_password.html', account=user, name=profile_names([user])[user.id])
+
+
+@portal_bp.route('/password-requests')
+@roles('admin')
+def password_requests():
+    from app.models import PortalPasswordRequest
+    from app.people import profile_names
+    pending = PortalPasswordRequest.query.filter_by(status='pending').order_by(PortalPasswordRequest.requested_at).all()
+    return render_template('portal/password_requests.html', requests=pending,
+                           names=profile_names([row.user for row in pending]))

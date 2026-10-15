@@ -23,10 +23,11 @@ def install_security(app):
                 abort(400, description='Your form expired. Refresh the page and try again.')
         if current_user.is_authenticated:
             from app.account_provisioning import inactive_teacher
-            if inactive_teacher(current_user):
+            from app.account_passwords import session_needs_reauthentication
+            if inactive_teacher(current_user) or session_needs_reauthentication(current_user):
                 logout_user()
                 session.clear()
-                return redirect(url_for('auth.login', role='teacher'))
+                return redirect(url_for('auth.login'))
         # The original modules expose school-wide records and are admin-only.
         if current_user.is_authenticated and request.blueprint in {
             'students', 'staff', 'attendance', 'grades', 'fees', 'parents'
